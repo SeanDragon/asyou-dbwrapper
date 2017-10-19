@@ -29,7 +29,7 @@ public class TestSessionFactory {
         Properties properties = new Properties();
         properties.put("db.seqdb.default.id", "default");
         properties.put("db.seqdb.default.address", "default");
-        // dbSessionFactory.init();
+        // dbSessionFactory.refresh();
     }
 
     private static Properties PROPERTIES;
