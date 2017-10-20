@@ -7,33 +7,33 @@ package org.asyou.db.exception;
  */
 public class DbException extends Exception {
 
-    private int errCode;
+    private DbErrorCode errCode;
 
-    public DbException(int errCode) {
+    public DbException(DbErrorCode errCode) {
         super();
         this.errCode = errCode;
     }
 
-    public DbException(String errMsg, int errCode) {
+    public DbException(String errMsg, DbErrorCode errCode) {
         super(errMsg);
         this.errCode = errCode;
     }
 
-    public DbException(Exception e, int errCode) {
+    public DbException(Exception e, DbErrorCode errCode) {
         super(e);
         this.errCode = errCode;
     }
 
-    public DbException(String errMsg, Exception e, int errCode) {
+    public DbException(String errMsg, Exception e, DbErrorCode errCode) {
         super(errMsg, e);
         this.errCode = errCode;
     }
 
-    public int getErrCode() {
+    public DbErrorCode getErrCode() {
         return errCode;
     }
 
-    public DbException setErrCode(int errCode) {
+    public DbException setErrCode(DbErrorCode errCode) {
         this.errCode = errCode;
         return this;
     }
@@ -41,7 +41,7 @@ public class DbException extends Exception {
     @Override
     public String getMessage() {
         String message = super.getMessage();
-        message += ";\r\n数据库异常码为:" + errCode + "\r\n";
+        message += ";\r\n数据库异常码为:" + errCode.getCode() + "\r\n";
         return message;
     }
 }

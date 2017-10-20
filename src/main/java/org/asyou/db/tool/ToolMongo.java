@@ -1,5 +1,7 @@
 package org.asyou.db.tool;
 
+import org.asyou.db.exception.DbErrorCode;
+import org.asyou.db.exception.DbException;
 import org.asyou.mongo.dao.MongoAdapter;
 
 /**
@@ -7,17 +9,19 @@ import org.asyou.mongo.dao.MongoAdapter;
  * <p>
  * Create By 2017-10-19 17:49
  */
-public class ToolMongo implements ToolDb{
+public class ToolMongo implements ToolDb {
 
-    private static MongoAdapter single;
+    private static volatile MongoAdapter single;
 
-    public ToolMongo(MongoAdapter mongoAdapter) {
-        if (single == null) {
-            refresh(mongoAdapter);
+    public synchronized static void resetSingle(String defaultAdapterId) throws DbException {
+        try {
+            single = new MongoAdapter(defaultAdapterId);
+        } catch (Exception e) {
+            throw new DbException("创建SequoiaAdapter对象失败", e, DbErrorCode.INIT_FAIL);
         }
     }
 
-    public synchronized static void refresh(MongoAdapter mongoAdapter) {
-        single = mongoAdapter;
+    public static MongoAdapter getSingle() {
+        return single;
     }
 }
