@@ -1,7 +1,5 @@
 package org.asyou.db.manager;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Maps;
 import org.asyou.db.exception.DbErrorCode;
 import org.asyou.db.exception.DbException;
 import org.asyou.db.session_factory.DbSessionFactory;
@@ -10,9 +8,8 @@ import org.asyou.sequoia.base.Config;
 import org.asyou.sequoia.base.ConfigManager;
 import org.asyou.sequoia.dao.SequoiaAdapter;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author SeanDragon
@@ -21,19 +18,29 @@ import java.util.Properties;
  */
 public class SequoiaControl extends DbControl {
 
-    private static Map<String, DbSessionFactory> dbSessionFactoryMap = Maps.newConcurrentMap();
+    private static SequoiaControl single;
+    private static Map<String, DbSessionFactory> dbSessionFactoryMap;
+
+    public static SequoiaControl getSingle() {
+        if (single == null) {
+            single = new SequoiaControl();
+        }
+        return single;
+    }
+
+    private SequoiaControl() {
+        dbSessionFactoryMap = new ConcurrentHashMap<>();
+    }
 
     @Override
-    public void addSessionFactory(String sessionFactoryId, Properties properties) throws DbException {
-        String id = properties.getProperty("db.seqdb.default.id");
-        String db = properties.getProperty("db.seqdb.default.db");
-        String address = properties.getProperty("db.seqdb.default.address");
-        List<String> addressList = Splitter.on(address).splitToList(",");
+    public void addSessionFactory(DbProp dbProp) throws DbException {
+
+        SequoiaProp prop = (SequoiaProp) dbProp;
 
         try {
-            Config config = new Config(id, db, addressList);
+            Config config = new Config(prop.getId(), prop.getDbName(), prop.getAddressList());
             ConfigManager.addConfig(config);
-            dbSessionFactoryMap.put(sessionFactoryId, buildNewSessionFactory(sessionFactoryId));
+            dbSessionFactoryMap.put(dbProp.getId(), buildNewSessionFactory(dbProp.getId()));
         } catch (Exception e) {
             throw new DbException("ConfigManager 添加新的sequoiaConfig失败", e, DbErrorCode.CONNECT_FAIL);
         }

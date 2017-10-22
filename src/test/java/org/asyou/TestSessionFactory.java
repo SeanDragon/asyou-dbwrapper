@@ -36,7 +36,7 @@
 //
 //     @BeforeClass
 //     public static void bc() throws URISyntaxException, IOException {
-//         URL resource = ClassLoader.getSystemClassLoader().getResource("db.properties");
+//         URL resource = ClassLoader.getSystemClassLoader().getResource("db.mongo.properties");
 //         PROPERTIES = new Properties();
 //         InputStream inputStream = Files.newInputStream(Paths.get(resource.toURI()));
 //         PROPERTIES.load(inputStream);

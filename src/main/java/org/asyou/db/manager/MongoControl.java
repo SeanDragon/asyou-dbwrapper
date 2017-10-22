@@ -1,6 +1,5 @@
 package org.asyou.db.manager;
 
-import com.google.common.collect.Maps;
 import org.asyou.db.exception.DbErrorCode;
 import org.asyou.db.exception.DbException;
 import org.asyou.db.session_factory.DbSessionFactory;
@@ -10,7 +9,7 @@ import org.asyou.mongo.base.MongoManager;
 import org.asyou.mongo.dao.MongoAdapter;
 
 import java.util.Map;
-import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * MongoDb的方言,用来获取SessionFactory
@@ -19,30 +18,36 @@ import java.util.Properties;
  */
 public class MongoControl extends DbControl {
 
-    private static Map<String, DbSessionFactory> dbSessionFactoryMap = Maps.newConcurrentMap();
+    private static MongoControl single;
+    private static Map<String, DbSessionFactory> dbSessionFactoryMap;
+
+    public static MongoControl getSingle() {
+        if (single == null) {
+            single = new MongoControl();
+        }
+        return single;
+    }
+
+    private MongoControl() {
+        dbSessionFactoryMap = new ConcurrentHashMap<>();
+    }
 
     @Override
-    public void addSessionFactory(String sessionFactoryId, Properties properties) throws DbException {
+    public void addSessionFactory(DbProp dbProp) throws DbException {
+        MongoProp prop = (MongoProp) dbProp;
+
         MongoConfig mongoConfig = new MongoConfig();
-        String id = properties.getProperty("db.mongo.id");
-        String hostName = properties.getProperty("db.mongo.host");
-        Integer port = Integer.valueOf(properties.getProperty("db.mongo.port"));
-        String dbName = properties.getProperty("db.mongo.database");
-        Integer poolSize = Integer.valueOf(properties.getProperty("db.mongo.poolSize"));
-        Integer maxWaitTime = Integer.valueOf(properties.getProperty("db.mongo.maxWaitTime"));
-        Integer connectTimeout = Integer.valueOf(properties.getProperty("db.mongo.connectTimeout"));
-        Integer blockSize = Integer.valueOf(properties.getProperty("db.mongo.blockSize"));
-        mongoConfig.setId(id);
-        mongoConfig.setHostName(hostName);
-        mongoConfig.setPort(port);
-        mongoConfig.setDatabaseName(dbName);
-        mongoConfig.setPoolSize(poolSize);
-        mongoConfig.setMaxWaitTime(maxWaitTime);
-        mongoConfig.setConnectTimeout(connectTimeout);
-        mongoConfig.setBlockSize(blockSize);
+        mongoConfig.setId(prop.getId());
+        mongoConfig.setHostName(prop.getHostName());
+        mongoConfig.setPort(prop.getPort());
+        mongoConfig.setDatabaseName(prop.getDbName());
+        mongoConfig.setPoolSize(prop.getPoolSize());
+        mongoConfig.setMaxWaitTime(prop.getMaxWaitTime());
+        mongoConfig.setConnectTimeout(prop.getConnectTimeout());
+        mongoConfig.setBlockSize(prop.getBlockSize());
         try {
             MongoManager.putMongoConfig(mongoConfig);
-            dbSessionFactoryMap.put(sessionFactoryId, buildNewSessionFactory(sessionFactoryId));
+            dbSessionFactoryMap.put(dbProp.getId(), buildNewSessionFactory(dbProp.getId()));
         } catch (Exception e) {
             throw new DbException("MongoManager 添加新的mongoConfig失败", e, DbErrorCode.INIT_FAIL);
         }
