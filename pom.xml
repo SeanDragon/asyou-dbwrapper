@@ -54,11 +54,5 @@
             <artifactId>asyou-sequoiawrapper</artifactId>
             <version>1.0</version>
         </dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>com.jfinal</groupId>-->
-            <!--<artifactId>jfinal</artifactId>-->
-            <!--<version>3.2</version>-->
-        <!--</dependency>-->
     </dependencies>
 </project>

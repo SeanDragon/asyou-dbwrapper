@@ -6,10 +6,7 @@ import com.mongodb.client.MongoCollection;
 import org.asyou.db.exception.DbErrorCode;
 import org.asyou.db.exception.DbException;
 import org.asyou.db.exception.MongoMsg;
-import org.asyou.db.tool.PageConvert;
-import org.asyou.db.tool.ToolMongo;
-import org.asyou.db.tool.ToolPageInfo;
-import org.asyou.db.tool.ToolPrimaryKey;
+import org.asyou.db.tool.*;
 import org.asyou.db.type.*;
 import org.asyou.mongo.Count;
 import org.asyou.mongo.FindMany;
@@ -19,7 +16,6 @@ import org.asyou.mongo.dao.IMongoAdapter;
 import org.asyou.mongo.dao.MongoHost;
 import org.asyou.mongo.query.IQuery;
 import org.asyou.mongo.query.QueryFactory;
-import org.asyou.mongo.query.QueryUtil;
 import org.asyou.mongo.wrapper.DateFromTo;
 import org.asyou.mongo.wrapper.DateWrapper;
 import org.bson.Document;
@@ -46,7 +42,7 @@ public class MongoSession implements DbSession {
     @Override
     public <T> boolean insertOne(T data) throws DbException {
         try {
-            boolean insertResult = mongoAdapter.insertOne(data) == 0;
+            boolean insertResult = mongoAdapter.collection(ToolTable.getName(data)).insertOne(data) == 0;
             log.debug(MongoMsg.insertOne(insertResult).result());
             return insertResult;
         } catch (Exception e) {
@@ -58,7 +54,7 @@ public class MongoSession implements DbSession {
     @Override
     public <T> boolean insertMany(List<T> dataList) throws DbException {
         try {
-            boolean insertResult = mongoAdapter.insertMany(dataList) == 0;
+            boolean insertResult = mongoAdapter.collection(ToolTable.getName(dataList.get(0))).insertMany(dataList) == 0;
             log.debug(MongoMsg.insertMany(insertResult).result());
             return insertResult;
         } catch (Exception e) {
@@ -70,7 +66,7 @@ public class MongoSession implements DbSession {
     @Override
     public <T> boolean deleteOne(T data) throws DbException {
         try {
-            boolean deleteResult = mongoAdapter.deleteOne(data) > 0;
+            boolean deleteResult = mongoAdapter.collection(ToolTable.getName(data)).deleteOne(data) > 0;
             log.debug(MongoMsg.deleteOne(deleteResult).result());
             return deleteResult;
         } catch (Exception e) {
@@ -82,7 +78,7 @@ public class MongoSession implements DbSession {
     @Override
     public <T> boolean deleteMany(T data) throws DbException {
         try {
-            boolean deleteResult = mongoAdapter.deleteMany(data) > 0;
+            boolean deleteResult = mongoAdapter.collection(ToolTable.getName(data)).deleteMany(data) > 0;
             log.debug(MongoMsg.deleteOne(deleteResult).result());
             return deleteResult;
         } catch (Exception e) {
@@ -95,7 +91,7 @@ public class MongoSession implements DbSession {
     public <T> boolean updateOne(T data) throws DbException {
         try {
             T queue = ToolPrimaryKey.getNewPrimaryKeyModel(data);
-            boolean updateResult = mongoAdapter.updateOne(queue, data).getModifiedCount() > 0;
+            boolean updateResult = mongoAdapter.collection(ToolTable.getName(data)).updateOne(queue, data).getModifiedCount() > 0;
             log.debug(MongoMsg.updateOne(updateResult).result());
             return updateResult;
         } catch (Exception e) {
@@ -108,7 +104,7 @@ public class MongoSession implements DbSession {
     public <T> boolean updateMany(T data) throws DbException {
         try {
             T queue = ToolPrimaryKey.getNewPrimaryKeyModel(data);
-            boolean updateResult = mongoAdapter.updateMany(queue, data).getModifiedCount() > 0;
+            boolean updateResult = mongoAdapter.collection(ToolTable.getName(data)).updateMany(queue, data).getModifiedCount() > 0;
             log.debug(MongoMsg.updateMany(updateResult).result());
             return updateResult;
         } catch (Exception e) {
@@ -119,7 +115,7 @@ public class MongoSession implements DbSession {
 
     @Override
     public <T> T findOne(T data) {
-        return mongoAdapter.findOne(data);
+        return mongoAdapter.collection(ToolTable.getName(data)).findOne(data);
     }
 
     @Override
@@ -141,7 +137,7 @@ public class MongoSession implements DbSession {
     @Override
     public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException {
         try {
-            FindMany findMany = mongoAdapter.findMany(data);
+            FindMany findMany = mongoAdapter.collection(ToolTable.getName(data)).findMany(data);
             if (fromToDate != null) {
                 DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName()
                         , new DateWrapper(fromToDate.getFrom())
@@ -184,7 +180,7 @@ public class MongoSession implements DbSession {
     @Override
     public <T> long count(T data, FromToDate fromToDate, BoolParams boolParams) throws DbException {
         try {
-            Count count = mongoAdapter.count(data);
+            Count count = mongoAdapter.collection(ToolTable.getName(data)).count(data);
             if (fromToDate != null) {
                 DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName(), new DateWrapper(fromToDate.getFrom()), new DateWrapper(fromToDate.getTo()));
                 count = count.dateFromTo(dateFromTo);
@@ -227,7 +223,7 @@ public class MongoSession implements DbSession {
 
             MongoCollection<Document> collection = new MongoHost(adapter, MongoManager.getMongoConfig(adapter.getId())).getDatabase()
                     .getCollection(
-                            QueryUtil.getCollectionName(clazz, null)
+                            ToolTable.getName(clazz)
                     );
 
             IQuery query = new QueryFactory().createQuery(iQuery.toString());
@@ -274,7 +270,7 @@ public class MongoSession implements DbSession {
 
             MongoCollection<Document> collection = new MongoHost(adapter, MongoManager.getMongoConfig(adapter.getId())).getDatabase()
                     .getCollection(
-                            QueryUtil.getCollectionName(clazz, null)
+                            ToolTable.getName(clazz)
                     );
 
             IQuery query = new QueryFactory().createQuery(iQuery.toString());
