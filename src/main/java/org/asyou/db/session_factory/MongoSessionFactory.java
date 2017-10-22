@@ -19,13 +19,6 @@ public class MongoSessionFactory implements DbSessionFactory {
     }
 
     @Override
-    public void connectDb() throws DbException {
-        if (instanceSession == null) {
-            instanceSession = new MongoSession(mongoAdapter);
-        }
-    }
-
-    @Override
     public DbSession openSession() throws DbException {
         return new MongoSession(mongoAdapter);
     }
@@ -41,11 +34,19 @@ public class MongoSessionFactory implements DbSessionFactory {
 
     @Override
     public DbSession getCurrentSession() throws DbException {
+        if (instanceSession == null) {
+            instanceSession = new MongoSession(mongoAdapter);
+        }
         return instanceSession;
     }
 
     @Override
     public void close() throws DbException {
         instanceSession = null;
+    }
+
+    @Override
+    public <T> T getNativeObj() {
+        return (T) mongoAdapter;
     }
 }

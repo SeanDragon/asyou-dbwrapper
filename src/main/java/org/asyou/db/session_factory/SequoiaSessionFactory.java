@@ -21,29 +21,30 @@ public class SequoiaSessionFactory implements DbSessionFactory {
     }
 
     @Override
-    public void connectDb() throws DbException {
-        if (instanceSession == null) {
-            instanceSession = new SequoiaSession(sequoiaAdapter);
-        }
-    }
-
-    @Override
     public DbSession openSession() throws DbException {
         return new SequoiaSession(sequoiaAdapter);
     }
 
     @Override
     public <T> T createService(Class<T> tClass) {
-        return ProxyFactory.create(tClass,sequoiaAdapter);
+        return ProxyFactory.create(tClass, sequoiaAdapter);
     }
 
     @Override
     public DbSession getCurrentSession() throws DbException {
+        if (instanceSession == null) {
+            instanceSession = new SequoiaSession(sequoiaAdapter);
+        }
         return instanceSession;
     }
 
     @Override
     public void close() throws DbException {
         instanceSession = null;
+    }
+
+    @Override
+    public <T> T getNativeObj() {
+        return (T) sequoiaAdapter;
     }
 }

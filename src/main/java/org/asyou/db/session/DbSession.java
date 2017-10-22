@@ -8,6 +8,7 @@ import org.asyou.db.type.PageInfo;
 import org.asyou.db.type.SearchParam;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author SeanDragon
@@ -41,6 +42,8 @@ public interface DbSession {
     <T> long count(T data, BoolParams boolParams) throws DbException;
 
     <T> long count(T data, FromToDate fromToDate, BoolParams boolParams) throws DbException;
+
+    <T> PageData<T> find(T t, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException;
 
     <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam<T>> searchParamList) throws DbException;
 

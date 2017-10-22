@@ -5,15 +5,12 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import org.asyou.db.exception.DbErrorCode;
 import org.asyou.db.exception.DbException;
+import org.asyou.db.exception.MongoMsg;
 import org.asyou.db.tool.PageConvert;
 import org.asyou.db.tool.ToolMongo;
 import org.asyou.db.tool.ToolPageInfo;
 import org.asyou.db.tool.ToolPrimaryKey;
-import org.asyou.db.type.BoolParams;
-import org.asyou.db.type.FromToDate;
-import org.asyou.db.type.PageData;
-import org.asyou.db.type.PageInfo;
-import org.asyou.db.type.SearchParam;
+import org.asyou.db.type.*;
 import org.asyou.mongo.Count;
 import org.asyou.mongo.FindMany;
 import org.asyou.mongo.Page;
@@ -26,6 +23,8 @@ import org.asyou.mongo.query.QueryUtil;
 import org.asyou.mongo.wrapper.DateFromTo;
 import org.asyou.mongo.wrapper.DateWrapper;
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pro.tools.data.text.ToolJson;
 import pro.tools.data.text.ToolStr;
 
@@ -37,21 +36,21 @@ import java.util.Map;
  */
 public class MongoSession implements DbSession {
 
-    private final IMongoAdapter adapter;
+    private static final Logger log = LoggerFactory.getLogger(MongoSession.class);
+    private final IMongoAdapter mongoAdapter;
 
-    public MongoSession(IMongoAdapter adapter) {
-        this.adapter = adapter;
+    public MongoSession(IMongoAdapter mongoAdapter) {
+        this.mongoAdapter = mongoAdapter;
     }
 
     @Override
     public <T> boolean insertOne(T data) throws DbException {
         try {
-            long insertResult = adapter.insertOne(data);
-            if (insertResult != 0) {
-                throw new DbException("单条插入失败，返回码是" + insertResult, DbErrorCode.EXEC_FAIL);
-            }
-            return true;
+            boolean insertResult = mongoAdapter.insertOne(data) == 0;
+            log.debug(MongoMsg.insertOne(insertResult).result());
+            return insertResult;
         } catch (Exception e) {
+            log.warn(MongoMsg.insertOne(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
         }
     }
@@ -59,12 +58,11 @@ public class MongoSession implements DbSession {
     @Override
     public <T> boolean insertMany(List<T> dataList) throws DbException {
         try {
-            long insertResult = adapter.insertMany(dataList);
-            if (insertResult != 0) {
-                throw new DbException("批量插入失败，返回码是" + insertResult, DbErrorCode.EXEC_FAIL);
-            }
-            return true;
+            boolean insertResult = mongoAdapter.insertMany(dataList) == 0;
+            log.debug(MongoMsg.insertMany(insertResult).result());
+            return insertResult;
         } catch (Exception e) {
+            log.warn(MongoMsg.insertMany(dataList).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
         }
     }
@@ -72,12 +70,11 @@ public class MongoSession implements DbSession {
     @Override
     public <T> boolean deleteOne(T data) throws DbException {
         try {
-            long insertResult = adapter.deleteOne(data);
-            if (insertResult <= 0) {
-                throw new DbException("单条删除失败，返回码是" + insertResult, DbErrorCode.EXEC_FAIL);
-            }
-            return true;
+            boolean deleteResult = mongoAdapter.deleteOne(data) > 0;
+            log.debug(MongoMsg.deleteOne(deleteResult).result());
+            return deleteResult;
         } catch (Exception e) {
+            log.warn(MongoMsg.deleteOne(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
         }
     }
@@ -85,12 +82,11 @@ public class MongoSession implements DbSession {
     @Override
     public <T> boolean deleteMany(T data) throws DbException {
         try {
-            long insertResult = adapter.deleteMany(data);
-            if (insertResult <= 0) {
-                throw new DbException("批量删除失败，返回码是" + insertResult, DbErrorCode.EXEC_FAIL);
-            }
-            return true;
+            boolean deleteResult = mongoAdapter.deleteMany(data) > 0;
+            log.debug(MongoMsg.deleteOne(deleteResult).result());
+            return deleteResult;
         } catch (Exception e) {
+            log.warn(MongoMsg.deleteMany(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
         }
     }
@@ -99,8 +95,11 @@ public class MongoSession implements DbSession {
     public <T> boolean updateOne(T data) throws DbException {
         try {
             T queue = ToolPrimaryKey.getNewPrimaryKeyModel(data);
-            return adapter.updateOne(queue, data).getMatchedCount() > 1;
+            boolean updateResult = mongoAdapter.updateOne(queue, data).getModifiedCount() > 0;
+            log.debug(MongoMsg.updateOne(updateResult).result());
+            return updateResult;
         } catch (Exception e) {
+            log.warn(MongoMsg.updateOne(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
         }
     }
@@ -109,47 +108,83 @@ public class MongoSession implements DbSession {
     public <T> boolean updateMany(T data) throws DbException {
         try {
             T queue = ToolPrimaryKey.getNewPrimaryKeyModel(data);
-            return adapter.updateMany(queue, data).getMatchedCount() > 1;
+            boolean updateResult = mongoAdapter.updateMany(queue, data).getModifiedCount() > 0;
+            log.debug(MongoMsg.updateMany(updateResult).result());
+            return updateResult;
         } catch (Exception e) {
+            log.warn(MongoMsg.updateMany(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
         }
     }
 
     @Override
-    public <T> T findOne(T t) {
-        return adapter.findOne(t);
+    public <T> T findOne(T data) {
+        return mongoAdapter.findOne(data);
     }
 
     @Override
-    public <T> PageData<T> findPage(T t) {
-        return find(t, null, null, null, 0, Integer.MAX_VALUE);
+    public <T> PageData<T> findPage(T data) throws DbException {
+        return find(data, null, null, null, 0, Integer.MAX_VALUE);
     }
 
     @Override
-    public <T> PageData<T> findPage(T t, BoolParams boolParams) {
-        return find(t, null, boolParams, null, 0, Integer.MAX_VALUE);
+    public <T> PageData<T> findPage(T data, BoolParams boolParams) throws DbException {
+        return find(data, null, boolParams, null, 0, Integer.MAX_VALUE);
     }
 
     @Override
-    public <T> PageData<T> findPage(T t, PageInfo pageInfo) {
+    public <T> PageData<T> findPage(T data, PageInfo pageInfo) throws DbException {
         pageInfo = ToolPageInfo.valid(pageInfo);
-        return find(t, pageInfo.getFromToDate(), pageInfo.getBoolParams(), pageInfo.getSortMap(), pageInfo.getPageIndex(), pageInfo.getPageSize());
+        return find(data, pageInfo.getFromToDate(), pageInfo.getBoolParams(), pageInfo.getSortMap(), pageInfo.getPageIndex(), pageInfo.getPageSize());
     }
 
     @Override
-    public <T> long count(T t) throws DbException {
-        return count(t, BoolParams.buildAnd());
-    }
-
-    @Override
-    public <T> long count(T t, BoolParams boolParams) throws DbException {
-        return count(t, null, boolParams);
-    }
-
-    @Override
-    public <T> long count(T t, FromToDate fromToDate, BoolParams boolParams) throws DbException {
+    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException {
         try {
-            Count count = adapter.count(t);
+            FindMany findMany = mongoAdapter.findMany(data);
+            if (fromToDate != null) {
+                DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName()
+                        , new DateWrapper(fromToDate.getFrom())
+                        , new DateWrapper(fromToDate.getTo()));
+                findMany = findMany.dateFromTo(dateFromTo);
+            }
+            if (sortMap != null) {
+                String sortStr = ToolJson.mapToJson(sortMap);
+                if (ToolStr.notBlank(sortStr)) {
+                    findMany = findMany.sort(sortStr);
+                }
+            }
+            if (boolParams.getContain()) {
+                findMany = findMany.contain();
+            }
+            if (boolParams.getOr()) {
+                findMany = findMany.OR();
+            }
+            if (boolParams.getNot()) {
+                findMany = findMany.NOT();
+            }
+            Page<T> page = findMany.page(pageIndex, pageSize);
+            PageData<T> pageData = PageConvert.page2pageData4mongo(page);
+            return pageData;
+        } catch (Exception e) {
+            throw new DbException(e, DbErrorCode.FIND_FAIL);
+        }
+    }
+
+    @Override
+    public <T> long count(T data) throws DbException {
+        return count(data, null);
+    }
+
+    @Override
+    public <T> long count(T data, BoolParams boolParams) throws DbException {
+        return count(data, null, boolParams);
+    }
+
+    @Override
+    public <T> long count(T data, FromToDate fromToDate, BoolParams boolParams) throws DbException {
+        try {
+            Count count = mongoAdapter.count(data);
             if (fromToDate != null) {
                 DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName(), new DateWrapper(fromToDate.getFrom()), new DateWrapper(fromToDate.getTo()));
                 count = count.dateFromTo(dateFromTo);
@@ -167,33 +202,6 @@ public class MongoSession implements DbSession {
         } catch (Exception e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
-    }
-
-    public <T> PageData<T> find(T t, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) {
-        FindMany findMany = adapter.findMany(t);
-        if (fromToDate != null) {
-            DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName()
-                    , new DateWrapper(fromToDate.getFrom())
-                    , new DateWrapper(fromToDate.getTo()));
-            findMany = findMany.dateFromTo(dateFromTo);
-        }
-        if (sortMap != null) {
-            String sortStr = ToolJson.mapToJson(sortMap);
-            if (ToolStr.notBlank(sortStr)) {
-                findMany = findMany.sort(sortStr);
-            }
-        }
-        if (boolParams.getContain()) {
-            findMany = findMany.contain();
-        }
-        if (boolParams.getOr()) {
-            findMany = findMany.OR();
-        }
-        if (boolParams.getNot()) {
-            findMany = findMany.NOT();
-        }
-        Page<T> page = findMany.page(pageIndex, pageSize);
-        return PageConvert.page2pageData4mongo(page);
     }
 
     @Override

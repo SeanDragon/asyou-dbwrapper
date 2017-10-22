@@ -1,7 +1,6 @@
 package org.asyou.db.tool;
 
 import org.asyou.db.type.PageData;
-import org.asyou.mongo.Page;
 
 /**
  * @author SeanDragon
@@ -9,7 +8,11 @@ import org.asyou.mongo.Page;
  * Create By 2017-10-20 15:12
  */
 public class PageConvert {
-    public static <T> PageData<T> page2pageData4mongo(Page<T> page){
+    public static <T> PageData<T> page2pageData4mongo(org.asyou.mongo.Page<T> page) {
         return new PageData<>(page.getPageIndex(), page.getPageSize(), page.getTotalCount(), page.getList());
+    }
+
+    public static <T> PageData<T> page2pageData4sequoia(org.asyou.sequoia.Page<T> page) {
+        return new PageData<T>(page.getPageIndex(), page.getPageSize(), page.getTotalCount(), page.getList());
     }
 }
