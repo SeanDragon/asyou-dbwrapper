@@ -162,7 +162,7 @@ public class SequoiaSession implements DbSession {
                 //FIXME 待测试
                 String sortStr = ToolJson.mapToJson(sortMap);
                 if (ToolStr.notBlank(sortStr)) {
-                    findMany = findMany.sort(new QueryMatcher(sortStr));
+                    findMany.sort(new QueryMatcher(sortStr));
                     haveMatcher = true;
                 }
             }
@@ -170,19 +170,19 @@ public class SequoiaSession implements DbSession {
             //FIXME 待测试
             if (boolParams != null) {
                 if (boolParams.getContain()) {
-                    queryMatcher = queryMatcher.contain();
+                    queryMatcher.contain();
                 }
                 if (boolParams.getOr()) {
-                    queryMatcher = queryMatcher.or();
+                    queryMatcher.or();
                 }
                 if (boolParams.getNot()) {
-                    queryMatcher = queryMatcher.not();
+                    queryMatcher.not();
                 }
                 haveMatcher = true;
             }
 
             if (haveMatcher) {
-                findMany = findMany.matcher(queryMatcher);
+                findMany.matcher(queryMatcher);
             }
 
             Page<T> page = findMany.page(pageIndex, pageSize);
@@ -221,19 +221,19 @@ public class SequoiaSession implements DbSession {
             if (boolParams != null) {
                 //FIXME 待测试
                 if (boolParams.getContain()) {
-                    queryMatcher = queryMatcher.contain();
+                    queryMatcher.contain();
                 }
                 if (boolParams.getOr()) {
-                    queryMatcher = queryMatcher.or();
+                    queryMatcher.or();
                 }
                 if (boolParams.getNot()) {
-                    queryMatcher = queryMatcher.not();
+                    queryMatcher.not();
                 }
                 haveMatcher = true;
             }
 
             if (haveMatcher) {
-                count = count.matcher(queryMatcher);
+                count.matcher(queryMatcher);
             }
 
             return count.getCount();

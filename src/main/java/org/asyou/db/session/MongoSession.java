@@ -154,24 +154,24 @@ public class MongoSession implements DbSession {
                 DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName()
                         , new DateWrapper(fromToDate.getFrom())
                         , new DateWrapper(fromToDate.getTo()));
-                findMany = findMany.dateFromTo(dateFromTo);
+                findMany.dateFromTo(dateFromTo);
             }
             if (sortMap != null && !sortMap.isEmpty()) {
                 String sortStr = ToolJson.mapToJson(sortMap);
                 if (ToolStr.notBlank(sortStr)) {
-                    findMany = findMany.sort(sortStr);
+                    findMany.sort(sortStr);
                 }
             }
 
             if (boolParams != null) {
                 if (boolParams.getContain()) {
-                    findMany = findMany.contain();
+                    findMany.contain();
                 }
                 if (boolParams.getOr()) {
-                    findMany = findMany.OR();
+                    findMany.OR();
                 }
                 if (boolParams.getNot()) {
-                    findMany = findMany.NOT();
+                    findMany.NOT();
                 }
             }
             Page<T> page = findMany.page(pageIndex, pageSize);
@@ -198,16 +198,16 @@ public class MongoSession implements DbSession {
             Count count = mongoAdapter.collection(ToolTable.getName(data)).count(data);
             if (fromToDate != null) {
                 DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName(), new DateWrapper(fromToDate.getFrom()), new DateWrapper(fromToDate.getTo()));
-                count = count.dateFromTo(dateFromTo);
+                count.dateFromTo(dateFromTo);
             }
             if (boolParams.getContain()) {
-                count = count.contain();
+                count.contain();
             }
             if (boolParams.getOr()) {
-                count = count.OR();
+                count.OR();
             }
             if (boolParams.getNot()) {
-                count = count.NOT();
+                count.NOT();
             }
             return count.count();
         } catch (Exception e) {
