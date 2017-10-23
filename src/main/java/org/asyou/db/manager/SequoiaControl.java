@@ -2,8 +2,8 @@ package org.asyou.db.manager;
 
 import org.asyou.db.exception.DbErrorCode;
 import org.asyou.db.exception.DbException;
-import org.asyou.db.session_factory.DbSessionFactory;
-import org.asyou.db.session_factory.SequoiaSessionFactory;
+import org.asyou.db.sessionfactory.DbSessionFactory;
+import org.asyou.db.sessionfactory.SequoiaSessionFactory;
 import org.asyou.sequoia.base.Config;
 import org.asyou.sequoia.base.ConfigManager;
 import org.asyou.sequoia.dao.SequoiaAdapter;

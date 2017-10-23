@@ -19,7 +19,9 @@ public interface DbSession {
 
     /**
      * 获取原生对象
+     *
      * @param <T>
+     *
      * @return
      */
     <T> T getNativeObj();

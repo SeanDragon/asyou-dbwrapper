@@ -1,4 +1,4 @@
-package org.asyou.db.session_factory;
+package org.asyou.db.sessionfactory;
 
 import org.asyou.db.exception.DbException;
 import org.asyou.db.session.DbSession;

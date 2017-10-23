@@ -2,8 +2,8 @@ package org.asyou.db.manager;
 
 import org.asyou.db.exception.DbErrorCode;
 import org.asyou.db.exception.DbException;
-import org.asyou.db.session_factory.DbSessionFactory;
-import org.asyou.db.session_factory.MongoSessionFactory;
+import org.asyou.db.sessionfactory.DbSessionFactory;
+import org.asyou.db.sessionfactory.MongoSessionFactory;
 import org.asyou.mongo.base.MongoConfig;
 import org.asyou.mongo.base.MongoManager;
 import org.asyou.mongo.dao.MongoAdapter;

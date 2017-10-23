@@ -2,7 +2,7 @@ package org.asyou.mongo;
 
 import org.asyou.db.exception.DbException;
 import org.asyou.db.session.DbSession;
-import org.asyou.db.session_factory.DbSessionFactory;
+import org.asyou.db.sessionfactory.DbSessionFactory;
 import org.asyou.sequoia.model.Matchers;
 import org.asyou.service.LoanService;
 import org.bson.BSONObject;

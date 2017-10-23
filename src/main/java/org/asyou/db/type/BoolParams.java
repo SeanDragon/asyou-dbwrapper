@@ -1,5 +1,8 @@
 package org.asyou.db.type;
 
+/**
+ * @author SeanDragon
+ */
 public class BoolParams {
     private boolean contain;
     private boolean or;

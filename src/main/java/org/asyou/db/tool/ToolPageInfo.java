@@ -7,6 +7,7 @@ import org.asyou.db.type.PageInfo;
 /**
  * Created By SeanDragon
  * At 2016年11月25日, PM 01:26:21
+ * @author SeanDragon
  */
 public class ToolPageInfo {
 
