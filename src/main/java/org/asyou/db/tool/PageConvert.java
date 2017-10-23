@@ -9,10 +9,10 @@ import org.asyou.db.type.PageData;
  */
 public class PageConvert {
     public static <T> PageData<T> page2pageData4mongo(org.asyou.mongo.Page<T> page) {
-        return new PageData<>(page.getPageIndex(), page.getPageSize(), page.getTotalCount(), page.getList());
+        return new PageData<>(page.getPageIndex(), page.getPerPageCount(), page.getTotalCount(), page.getList());
     }
 
     public static <T> PageData<T> page2pageData4sequoia(org.asyou.sequoia.Page<T> page) {
-        return new PageData<T>(page.getPageIndex(), page.getPageSize(), page.getTotalCount(), page.getList());
+        return new PageData<T>(page.getPageIndex(), page.getPerPageCount(), page.getTotalCount(), page.getList());
     }
 }
