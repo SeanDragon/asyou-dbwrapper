@@ -130,7 +130,7 @@ public class SequoiaSession implements DbSession {
 
     @Override
     public <T> PageData<T> findPage(T data) throws DbException {
-        return find(data, null, null, null, 0, Integer.MAX_VALUE);
+        return find(data, null, BoolParams.buildAnd(), null, 0, Integer.MAX_VALUE);
     }
 
     @Override
