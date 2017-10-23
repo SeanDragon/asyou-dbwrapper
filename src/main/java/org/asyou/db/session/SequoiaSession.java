@@ -158,7 +158,7 @@ public class SequoiaSession implements DbSession {
                 queryMatcher.dateTimeFromTo(dateTimeFromTo);
                 haveMatcher = true;
             }
-            if (sortMap != null) {
+            if (sortMap != null && !sortMap.isEmpty()) {
                 //FIXME 待测试
                 String sortStr = ToolJson.mapToJson(sortMap);
                 if (ToolStr.notBlank(sortStr)) {

@@ -156,20 +156,23 @@ public class MongoSession implements DbSession {
                         , new DateWrapper(fromToDate.getTo()));
                 findMany = findMany.dateFromTo(dateFromTo);
             }
-            if (sortMap != null) {
+            if (sortMap != null && !sortMap.isEmpty()) {
                 String sortStr = ToolJson.mapToJson(sortMap);
                 if (ToolStr.notBlank(sortStr)) {
                     findMany = findMany.sort(sortStr);
                 }
             }
-            if (boolParams.getContain()) {
-                findMany = findMany.contain();
-            }
-            if (boolParams.getOr()) {
-                findMany = findMany.OR();
-            }
-            if (boolParams.getNot()) {
-                findMany = findMany.NOT();
+
+            if (boolParams != null) {
+                if (boolParams.getContain()) {
+                    findMany = findMany.contain();
+                }
+                if (boolParams.getOr()) {
+                    findMany = findMany.OR();
+                }
+                if (boolParams.getNot()) {
+                    findMany = findMany.NOT();
+                }
             }
             Page<T> page = findMany.page(pageIndex, pageSize);
             PageData<T> pageData = PageConvert.page2pageData4mongo(page);
