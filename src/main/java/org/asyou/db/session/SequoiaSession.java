@@ -130,7 +130,7 @@ public class SequoiaSession implements DbSession {
 
     @Override
     public <T> PageData<T> findPage(T data) throws DbException {
-        return find(data, null, BoolParams.buildAnd(), null, 0, Integer.MAX_VALUE);
+        return find(data, null, null, null, 0, Integer.MAX_VALUE);
     }
 
     @Override
@@ -149,32 +149,42 @@ public class SequoiaSession implements DbSession {
         try {
             FindMany findMany = sequoiaAdapter.collection(ToolTable.getName(data)).findMany(data);
             QueryMatcher queryMatcher = new QueryMatcher();
+            boolean haveMatcher = false;
             if (fromToDate != null) {
                 DateTimeFromTo dateTimeFromTo = new DateTimeFromTo(fromToDate.getFieldName()
                         , new DateTime(fromToDate.getFrom())
                         , new DateTime(fromToDate.getTo()));
                 //FIXME 待测试
                 queryMatcher.dateTimeFromTo(dateTimeFromTo);
+                haveMatcher = true;
             }
             if (sortMap != null) {
                 //FIXME 待测试
                 String sortStr = ToolJson.mapToJson(sortMap);
                 if (ToolStr.notBlank(sortStr)) {
                     findMany = findMany.sort(new QueryMatcher(sortStr));
+                    haveMatcher = true;
                 }
             }
 
             //FIXME 待测试
-            if (boolParams.getContain()) {
-                queryMatcher = queryMatcher.contain();
+            if (boolParams != null) {
+                if (boolParams.getContain()) {
+                    queryMatcher = queryMatcher.contain();
+                }
+                if (boolParams.getOr()) {
+                    queryMatcher = queryMatcher.or();
+                }
+                if (boolParams.getNot()) {
+                    queryMatcher = queryMatcher.not();
+                }
+                haveMatcher = true;
             }
-            if (boolParams.getOr()) {
-                queryMatcher = queryMatcher.or();
+
+            if (haveMatcher) {
+                findMany = findMany.matcher(queryMatcher);
             }
-            if (boolParams.getNot()) {
-                queryMatcher = queryMatcher.not();
-            }
-            findMany = findMany.matcher(queryMatcher);
+
             Page<T> page = findMany.page(pageIndex, pageSize);
             PageData<T> pageData = PageConvert.page2pageData4sequoia(page);
             return pageData;
@@ -198,25 +208,34 @@ public class SequoiaSession implements DbSession {
         try {
             Count count = sequoiaAdapter.collection(ToolTable.getName(data)).count(data);
             QueryMatcher queryMatcher = new QueryMatcher();
+            boolean haveMatcher = false;
             if (fromToDate != null) {
                 DateTimeFromTo dateTimeFromTo = new DateTimeFromTo(fromToDate.getFieldName()
                         , new DateTime(fromToDate.getFrom())
                         , new DateTime(fromToDate.getTo()));
                 //FIXME 待测试
                 queryMatcher.dateTimeFromTo(dateTimeFromTo);
+                haveMatcher = true;
             }
 
-            //FIXME 待测试
-            if (boolParams.getContain()) {
-                queryMatcher = queryMatcher.contain();
+            if (boolParams != null) {
+                //FIXME 待测试
+                if (boolParams.getContain()) {
+                    queryMatcher = queryMatcher.contain();
+                }
+                if (boolParams.getOr()) {
+                    queryMatcher = queryMatcher.or();
+                }
+                if (boolParams.getNot()) {
+                    queryMatcher = queryMatcher.not();
+                }
+                haveMatcher = true;
             }
-            if (boolParams.getOr()) {
-                queryMatcher = queryMatcher.or();
+
+            if (haveMatcher) {
+                count = count.matcher(queryMatcher);
             }
-            if (boolParams.getNot()) {
-                queryMatcher = queryMatcher.not();
-            }
-            count = count.matcher(queryMatcher);
+
             return count.getCount();
         } catch (Exception e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
