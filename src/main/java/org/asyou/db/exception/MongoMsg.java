@@ -6,14 +6,8 @@ package org.asyou.db.exception;
  * @author sd
  */
 public class MongoMsg extends DbMsg {
-
-
     MongoMsg(String doType, Object content) {
         super(doType, content);
-    }
-
-    @Override
-    public String getDbType() {
-        return "MONGO";
+        super.dbType = "MONGO";
     }
 }

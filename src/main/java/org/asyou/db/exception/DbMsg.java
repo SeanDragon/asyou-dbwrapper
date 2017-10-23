@@ -8,21 +8,13 @@ import pro.tools.data.text.ToolJson;
  * @author sd
  */
 public class DbMsg {
+    String dbType;
     private String doType;
     private String content;
 
     DbMsg(String doType, Object content) {
         this.doType = doType;
         this.content = ToolJson.anyToJson(content);
-    }
-
-    /**
-     * 必须由子类重写
-     *
-     * @return
-     */
-    public String getDbType() {
-        throw new IllegalArgumentException("需要子类实现");
     }
 
     public static DbMsg insertOne(Object content) {
@@ -55,7 +47,7 @@ public class DbMsg {
      * @return
      */
     public String result() {
-        return String.format("DB:%S:%S:RESULT:%S", getDbType(), doType, content);
+        return String.format("DB:%S:%S:RESULT:%S", dbType, doType, content);
     }
 
     /**
@@ -64,7 +56,7 @@ public class DbMsg {
      * @return
      */
     public String error() {
-        return String.format("DB:%S:%S:ERROR:%S", getDbType(), doType, content);
+        return String.format("DB:%S:%S:ERROR:%S", dbType, doType, content);
     }
 
     private class DoType {

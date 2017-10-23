@@ -1,5 +1,7 @@
 package org.asyou.model;
 
+import org.asyou.db.annotation.Table;
+
 import java.util.Date;
 
 /**
@@ -7,6 +9,7 @@ import java.util.Date;
  *
  * @author sd
  */
+@Table("loan")
 public class LoanModel {
     private Long id;
     private String loanName;

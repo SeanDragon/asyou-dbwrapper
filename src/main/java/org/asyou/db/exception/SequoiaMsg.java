@@ -8,10 +8,6 @@ package org.asyou.db.exception;
 public class SequoiaMsg extends DbMsg {
     SequoiaMsg(String doType, Object content) {
         super(doType, content);
-    }
-
-    @Override
-    public String getDbType() {
-        return "SEQUOIA";
+        super.dbType="SEQUOIA";
     }
 }

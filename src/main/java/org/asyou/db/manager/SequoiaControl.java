@@ -40,9 +40,10 @@ public class SequoiaControl extends DbControl {
         try {
             Config config = new Config(prop.getId(), prop.getDbName(), prop.getAddressList());
             ConfigManager.addConfig(config);
-            dbSessionFactoryMap.put(dbProp.getId(), buildNewSessionFactory(dbProp.getId()));
+            DbSessionFactory sessionFactory = buildNewSessionFactory(dbProp.getId());
+            dbSessionFactoryMap.put(dbProp.getId(), sessionFactory);
         } catch (Exception e) {
-            throw new DbException("ConfigManager 添加新的sequoiaConfig失败", e, DbErrorCode.CONNECT_FAIL);
+            throw new DbException("ConfigManager 添加新的sequoiaConfig失败", e, DbErrorCode.INIT_FAIL);
         }
     }
 

@@ -6,8 +6,15 @@ import com.mongodb.client.MongoCollection;
 import org.asyou.db.exception.DbErrorCode;
 import org.asyou.db.exception.DbException;
 import org.asyou.db.exception.MongoMsg;
-import org.asyou.db.tool.*;
-import org.asyou.db.type.*;
+import org.asyou.db.tool.PageConvert;
+import org.asyou.db.tool.ToolPageInfo;
+import org.asyou.db.tool.ToolPrimaryKey;
+import org.asyou.db.tool.ToolTable;
+import org.asyou.db.type.BoolParams;
+import org.asyou.db.type.FromToDate;
+import org.asyou.db.type.PageData;
+import org.asyou.db.type.PageInfo;
+import org.asyou.db.type.SearchParam;
 import org.asyou.mongo.Count;
 import org.asyou.mongo.FindMany;
 import org.asyou.mongo.Page;
@@ -218,10 +225,7 @@ public class MongoSession implements DbSession {
             });
             iQuery.deleteCharAt(iQuery.length() - 1);
             iQuery.append("}");
-
-            IMongoAdapter adapter = ToolMongo.getSingle();
-
-            MongoCollection<Document> collection = new MongoHost(adapter, MongoManager.getMongoConfig(adapter.getId())).getDatabase()
+            MongoCollection<Document> collection = new MongoHost(mongoAdapter, MongoManager.getMongoConfig(mongoAdapter.getId())).getDatabase()
                     .getCollection(
                             ToolTable.getName(clazz)
                     );
@@ -266,9 +270,7 @@ public class MongoSession implements DbSession {
             iQuery.deleteCharAt(iQuery.length() - 1);
             iQuery.append("}");
 
-            IMongoAdapter adapter = ToolMongo.getSingle();
-
-            MongoCollection<Document> collection = new MongoHost(adapter, MongoManager.getMongoConfig(adapter.getId())).getDatabase()
+            MongoCollection<Document> collection = new MongoHost(mongoAdapter, MongoManager.getMongoConfig(mongoAdapter.getId())).getDatabase()
                     .getCollection(
                             ToolTable.getName(clazz)
                     );

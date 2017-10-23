@@ -5,7 +5,6 @@ import org.asyou.db.exception.DbException;
 import org.asyou.db.manager.DbControl;
 import org.asyou.db.manager.MongoControl;
 import org.asyou.db.manager.MongoProp;
-import org.asyou.db.tool.ToolMongo;
 import org.junit.BeforeClass;
 
 import java.util.Properties;
@@ -44,7 +43,6 @@ public class MongoBootRunner extends BootRunner {
             ;
 
             mongoControl.addSessionFactory(mongoProp);
-            ToolMongo.resetSingle(dbProp.getProperty("db.mongo.id"));
         } catch (DbException e) {
             e.printStackTrace();
         }
