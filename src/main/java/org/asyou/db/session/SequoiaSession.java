@@ -122,7 +122,7 @@ public class SequoiaSession implements DbSession {
     @Override
     public <T> T findOne(T data) throws DbException {
         try {
-            return sequoiaAdapter.collection(ToolTable.getName(data)).findOne(data).getOne();
+            return sequoiaAdapter.collection(ToolTable.getName(data)).findOne(data).get();
         } catch (SequoiaAdapterException e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
@@ -243,7 +243,7 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam<T>> searchParamList) throws DbException {
+    public <T,N> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam<N>> searchParamList) throws DbException {
         try {
             pageInfo = ToolPageInfo.valid(pageInfo);
 
@@ -263,7 +263,7 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
-    public <T> long countAny(Class<T> tClass, List<SearchParam<T>> searchParamList) throws DbException {
+    public <T,N> long countAny(Class<T> tClass, List<SearchParam<N>> searchParamList) throws DbException {
         try {
             BSONObject[] searchs = new BSONObject[searchParamList.size()];
             for (int i = 0; i < searchParamList.size(); i++) {

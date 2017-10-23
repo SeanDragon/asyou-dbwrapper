@@ -216,7 +216,7 @@ public class MongoSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> clazz, List<SearchParam<T>> searchParamList) throws DbException {
+    public <T,N> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam<N>> searchParamList) throws DbException {
         try {
             pageInfo = ToolPageInfo.valid(pageInfo);
             StringBuilder iQuery = new StringBuilder("{");
@@ -235,7 +235,7 @@ public class MongoSession implements DbSession {
             iQuery.append("}");
             MongoCollection<Document> collection = new MongoHost(mongoAdapter, MongoManager.getMongoConfig(mongoAdapter.getId())).getDatabase()
                     .getCollection(
-                            ToolTable.getName(clazz)
+                            ToolTable.getName(tClass)
                     );
 
             IQuery query = new QueryFactory().createQuery(iQuery.toString());
@@ -251,7 +251,7 @@ public class MongoSession implements DbSession {
             List<T> list = Lists.newLinkedList();
 
             for (Document document : findIterable) {
-                list.add(ToolJson.mapToModel(document, clazz));
+                list.add(ToolJson.mapToModel(document, tClass));
             }
 
             return new PageData<>(pageInfo.getPageIndex(), pageInfo.getPageSize(), totalCount, list);
@@ -261,7 +261,7 @@ public class MongoSession implements DbSession {
     }
 
     @Override
-    public <T> long countAny(Class<T> clazz, List<SearchParam<T>> searchParamList) throws DbException {
+    public <T,N> long countAny(Class<T> tClass, List<SearchParam<N>> searchParamList) throws DbException {
         try {
             StringBuilder iQuery = new StringBuilder("{");
             searchParamList.forEach(one -> {
@@ -280,7 +280,7 @@ public class MongoSession implements DbSession {
 
             MongoCollection<Document> collection = new MongoHost(mongoAdapter, MongoManager.getMongoConfig(mongoAdapter.getId())).getDatabase()
                     .getCollection(
-                            ToolTable.getName(clazz)
+                            ToolTable.getName(tClass)
                     );
 
             IQuery query = new QueryFactory().createQuery(iQuery.toString());

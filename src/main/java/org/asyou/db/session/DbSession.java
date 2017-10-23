@@ -54,7 +54,7 @@ public interface DbSession {
 
     <T> PageData<T> find(T t, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException;
 
-    <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam<T>> searchParamList) throws DbException;
+    <T,N> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam<N>> searchParamList) throws DbException;
 
-    <T> long countAny(Class<T> tClass, List<SearchParam<T>> searchParamList) throws DbException;
+    <T,N> long countAny(Class<T> tClass, List<SearchParam<N>> searchParamList) throws DbException;
 }
