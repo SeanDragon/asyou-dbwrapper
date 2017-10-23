@@ -47,6 +47,11 @@ public class MongoSession implements DbSession {
     }
 
     @Override
+    public <T> T getNativeObj() {
+        return (T) this.mongoAdapter;
+    }
+
+    @Override
     public <T> boolean insertOne(T data) throws DbException {
         try {
             boolean insertResult = mongoAdapter.collection(ToolTable.getName(data)).insertOne(data) == 0;

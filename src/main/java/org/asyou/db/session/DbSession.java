@@ -17,6 +17,13 @@ import java.util.Map;
  */
 public interface DbSession {
 
+    /**
+     * 获取原生对象
+     * @param <T>
+     * @return
+     */
+    <T> T getNativeObj();
+
     <T> boolean insertOne(T data) throws DbException;
 
     <T> boolean insertMany(List<T> dataList) throws DbException;

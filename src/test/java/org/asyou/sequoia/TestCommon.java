@@ -4,6 +4,7 @@ import org.asyou.db.exception.DbException;
 import org.asyou.db.manager.SequoiaControl;
 import org.asyou.db.session.DbSession;
 import org.asyou.db.session_factory.DbSessionFactory;
+import org.asyou.sequoia.dao.SequoiaAdapter;
 import org.junit.Test;
 
 /**
@@ -17,6 +18,7 @@ public class TestCommon extends SequoiaBootRunner {
         try {
             DbSessionFactory sessionFactory = SequoiaControl.getSingle().getSessionFactory("default");
             DbSession session = sessionFactory.getCurrentSession();
+            SequoiaAdapter adapter = session.getNativeObj();
             boolean b = session.insertOne(buildNewModel());
             System.out.println(b);
         } catch (DbException e) {

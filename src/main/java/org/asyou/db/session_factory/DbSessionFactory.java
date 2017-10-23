@@ -43,5 +43,10 @@ public interface DbSessionFactory {
      */
     public void close() throws DbException;
 
+    /**
+     * 获取原生对象
+     * @param <T>
+     * @return
+     */
     <T> T getNativeObj();
 }

@@ -41,6 +41,11 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
+    public <T> T getNativeObj() {
+        return (T) this.sequoiaAdapter;
+    }
+
+    @Override
     public <T> boolean insertOne(T data) throws DbException {
         try {
             boolean insertResult = sequoiaAdapter.collection(ToolTable.getName(data)).insert().insertOneT(data) == 1;
