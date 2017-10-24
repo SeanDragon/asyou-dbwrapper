@@ -152,7 +152,7 @@ public class SequoiaSession implements DbSession {
     public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException {
         try {
             FindMany findMany = sequoiaAdapter.collection(ToolTable.getName(data)).findMany(data);
-            QueryMatcher queryMatcher = new QueryMatcher();
+            QueryMatcher queryMatcher = new QueryMatcher(data);
             boolean haveMatcher = false;
 
             if (fromToDate != null) {
@@ -218,7 +218,7 @@ public class SequoiaSession implements DbSession {
     public <T> long count(T data, FromToDate fromToDate, BoolParams boolParams) throws DbException {
         try {
             Count count = sequoiaAdapter.collection(ToolTable.getName(data)).count(data);
-            QueryMatcher queryMatcher = new QueryMatcher();
+            QueryMatcher queryMatcher = new QueryMatcher(data);
             boolean haveMatcher = false;
 
             if (fromToDate != null) {
