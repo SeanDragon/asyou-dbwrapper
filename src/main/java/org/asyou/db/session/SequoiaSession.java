@@ -52,9 +52,9 @@ public class SequoiaSession implements DbSession {
     @Override
     public <T> boolean insertOne(T data) throws DbException {
         try {
-            boolean insertResult = sequoiaAdapter.collection(ToolTable.getName(data)).insert().insertOneT(data) == 1;
+            int insertResult = sequoiaAdapter.collection(ToolTable.getName(data)).insert().insertOneT(data);
             log.debug(SequoiaMsg.insertOne(insertResult).result());
-            return insertResult;
+            return insertResult == 1;
         } catch (SequoiaAdapterException e) {
             log.warn(SequoiaMsg.insertOne(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
@@ -64,9 +64,9 @@ public class SequoiaSession implements DbSession {
     @Override
     public <T> boolean insertMany(List<T> dataList) throws DbException {
         try {
-            boolean insertResult = sequoiaAdapter.collection(ToolTable.getName(dataList.get(0))).insert().insertManyT(dataList) == 1;
+            int insertResult = sequoiaAdapter.collection(ToolTable.getName(dataList.get(0))).insert().insertManyT(dataList);
             log.debug(SequoiaMsg.insertMany(insertResult).result());
-            return insertResult;
+            return insertResult == 1;
         } catch (SequoiaAdapterException e) {
             log.warn(SequoiaMsg.insertMany(dataList).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
@@ -76,9 +76,11 @@ public class SequoiaSession implements DbSession {
     @Override
     public <T> boolean deleteOne(T data) throws DbException {
         try {
-            boolean deleteResult = sequoiaAdapter.collection(ToolTable.getName(data)).delete(data).deleteOneT() == 1;
+            //1 成功
+            //0 匹配性错误，如：未匹配到和匹配超过一条
+            int deleteResult = sequoiaAdapter.collection(ToolTable.getName(data)).delete(data).deleteOneT();
             log.debug(SequoiaMsg.deleteOne(deleteResult).result());
-            return deleteResult;
+            return deleteResult == 1;
         } catch (SequoiaAdapterException e) {
             log.warn(SequoiaMsg.deleteOne(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
@@ -88,9 +90,11 @@ public class SequoiaSession implements DbSession {
     @Override
     public <T> boolean deleteMany(T data) throws DbException {
         try {
-            boolean deleteResult = sequoiaAdapter.collection(ToolTable.getName(data)).delete(data).deleteManyT() == 1;
+            //>0 该值返回是影响的行数
+            //0 匹配性错误，没有匹配到数据
+            int deleteResult = sequoiaAdapter.collection(ToolTable.getName(data)).delete(data).deleteManyT();
             log.debug(SequoiaMsg.deleteMany(deleteResult).result());
-            return deleteResult;
+            return deleteResult > 0;
         } catch (SequoiaAdapterException e) {
             log.warn(SequoiaMsg.deleteMany(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
@@ -101,9 +105,11 @@ public class SequoiaSession implements DbSession {
     public <T> boolean updateOne(T data) throws DbException {
         try {
             T queue = ToolPrimaryKey.getNewPrimaryKeyModel(data);
-            boolean updateResult = sequoiaAdapter.collection(ToolTable.getName(data)).update().updateOneT(queue, data) == 1;
+            //1 成功
+            //0 匹配性错误，如：未匹配到和匹配超过一条
+            int updateResult = sequoiaAdapter.collection(ToolTable.getName(data)).update().updateOneT(queue, data);
             log.debug(SequoiaMsg.updateOne(updateResult).result());
-            return updateResult;
+            return updateResult == 1;
         } catch (SequoiaAdapterException | IllegalAccessException | InstantiationException e) {
             log.warn(SequoiaMsg.updateOne(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
@@ -114,9 +120,11 @@ public class SequoiaSession implements DbSession {
     public <T> boolean updateMany(T data) throws DbException {
         try {
             T queue = ToolPrimaryKey.getNewPrimaryKeyModel(data);
-            boolean updateResult = sequoiaAdapter.collection(ToolTable.getName(data)).update().updateManyT(queue, data) == 1;
+            //>0 该值返回是影响的行数
+            //0 匹配性错误，没有匹配到数据
+            int updateResult = sequoiaAdapter.collection(ToolTable.getName(data)).update().updateManyT(queue, data);
             log.debug(SequoiaMsg.updateMany(updateResult).result());
-            return updateResult;
+            return updateResult > 0;
         } catch (SequoiaAdapterException | IllegalAccessException | InstantiationException e) {
             log.warn(SequoiaMsg.updateMany(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
@@ -156,18 +164,18 @@ public class SequoiaSession implements DbSession {
             boolean haveMatcher = false;
 
             if (fromToDate != null) {
-                if(fromToDate.isShort()) {
+                if (fromToDate.isShort()) {
                     DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName());
                     dateFromTo.setFrom(fromToDate.getFrom().getLocalDateTime().toLocalDate());
                     dateFromTo.setTo(fromToDate.getTo().getLocalDateTime().toLocalDate());
                     queryMatcher.dateFromTo(dateFromTo);
-                }else {
+                } else {
                     DateTimeFromTo dateTimeFromTo = new DateTimeFromTo(fromToDate.getFieldName());
                     dateTimeFromTo.setFrom(fromToDate.getFrom().getLocalDateTime());
                     dateTimeFromTo.setTo(fromToDate.getTo().getLocalDateTime());
                     queryMatcher.dateTimeFromTo(dateTimeFromTo);
                 }
-                haveMatcher=true;
+                haveMatcher = true;
             }
             if (sortMap != null && !sortMap.isEmpty()) {
                 //FIXME 待测试
@@ -222,18 +230,18 @@ public class SequoiaSession implements DbSession {
             boolean haveMatcher = false;
 
             if (fromToDate != null) {
-                if(fromToDate.isShort()) {
+                if (fromToDate.isShort()) {
                     DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName());
                     dateFromTo.setFrom(fromToDate.getFrom().getLocalDateTime().toLocalDate());
                     dateFromTo.setTo(fromToDate.getTo().getLocalDateTime().toLocalDate());
                     queryMatcher.dateFromTo(dateFromTo);
-                }else {
+                } else {
                     DateTimeFromTo dateTimeFromTo = new DateTimeFromTo(fromToDate.getFieldName());
                     dateTimeFromTo.setFrom(fromToDate.getFrom().getLocalDateTime());
                     dateTimeFromTo.setTo(fromToDate.getTo().getLocalDateTime());
                     queryMatcher.dateTimeFromTo(dateTimeFromTo);
                 }
-                haveMatcher=true;
+                haveMatcher = true;
             }
 
             if (boolParams != null) {
@@ -271,6 +279,7 @@ public class SequoiaSession implements DbSession {
                 searchs[i] = Matchers.in(searchParam.getFieldName(), searchParam.getValues());
             }
             BSONObject query = Matchers.and(searchs);
+
             FindMany findMany = sequoiaAdapter.collection(ToolTable.getName(tClass)).findMany(query).as(tClass);
             Page<T> page = findMany.page(pageInfo.getPageIndex(), pageInfo.getPageSize());
             PageData<T> pageData = PageConvert.page2pageData4sequoia(page);
