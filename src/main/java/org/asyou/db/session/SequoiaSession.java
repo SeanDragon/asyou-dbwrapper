@@ -19,13 +19,13 @@ import org.asyou.sequoia.dao.SequoiaAdapter;
 import org.asyou.sequoia.exception.SequoiaAdapterException;
 import org.asyou.sequoia.model.Matchers;
 import org.asyou.sequoia.query.QueryMatcher;
+import org.asyou.sequoia.type.DateFromTo;
 import org.asyou.sequoia.type.DateTimeFromTo;
 import org.bson.BSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pro.tools.data.text.ToolJson;
 import pro.tools.data.text.ToolStr;
-import pro.tools.time.ToolDateTime;
 
 import java.util.List;
 import java.util.Map;
@@ -154,13 +154,20 @@ public class SequoiaSession implements DbSession {
             FindMany findMany = sequoiaAdapter.collection(ToolTable.getName(data)).findMany(data);
             QueryMatcher queryMatcher = new QueryMatcher();
             boolean haveMatcher = false;
+
             if (fromToDate != null) {
-                DateTimeFromTo dateTimeFromTo = new DateTimeFromTo(fromToDate.getFieldName()
-                        , ToolDateTime.date2LocalDateTime(fromToDate.getFrom())
-                        , ToolDateTime.date2LocalDateTime(fromToDate.getTo()));
-                //FIXME 待测试
-                queryMatcher.dateTimeFromTo(dateTimeFromTo);
-                haveMatcher = true;
+                if(fromToDate.isShort()) {
+                    DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName());
+                    dateFromTo.setFrom(fromToDate.getFrom().getLocalDateTime().toLocalDate());
+                    dateFromTo.setTo(fromToDate.getTo().getLocalDateTime().toLocalDate());
+                    queryMatcher.dateFromTo(dateFromTo);
+                }else {
+                    DateTimeFromTo dateTimeFromTo = new DateTimeFromTo(fromToDate.getFieldName());
+                    dateTimeFromTo.setFrom(fromToDate.getFrom().getLocalDateTime());
+                    dateTimeFromTo.setTo(fromToDate.getTo().getLocalDateTime());
+                    queryMatcher.dateTimeFromTo(dateTimeFromTo);
+                }
+                haveMatcher=true;
             }
             if (sortMap != null && !sortMap.isEmpty()) {
                 //FIXME 待测试
@@ -213,13 +220,20 @@ public class SequoiaSession implements DbSession {
             Count count = sequoiaAdapter.collection(ToolTable.getName(data)).count(data);
             QueryMatcher queryMatcher = new QueryMatcher();
             boolean haveMatcher = false;
+
             if (fromToDate != null) {
-                DateTimeFromTo dateTimeFromTo = new DateTimeFromTo(fromToDate.getFieldName()
-                        , ToolDateTime.date2LocalDateTime(fromToDate.getFrom())
-                        , ToolDateTime.date2LocalDateTime(fromToDate.getTo()));
-                //FIXME 待测试
-                queryMatcher.dateTimeFromTo(dateTimeFromTo);
-                haveMatcher = true;
+                if(fromToDate.isShort()) {
+                    DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName());
+                    dateFromTo.setFrom(fromToDate.getFrom().getLocalDateTime().toLocalDate());
+                    dateFromTo.setTo(fromToDate.getTo().getLocalDateTime().toLocalDate());
+                    queryMatcher.dateFromTo(dateFromTo);
+                }else {
+                    DateTimeFromTo dateTimeFromTo = new DateTimeFromTo(fromToDate.getFieldName());
+                    dateTimeFromTo.setFrom(fromToDate.getFrom().getLocalDateTime());
+                    dateTimeFromTo.setTo(fromToDate.getTo().getLocalDateTime());
+                    queryMatcher.dateTimeFromTo(dateTimeFromTo);
+                }
+                haveMatcher=true;
             }
 
             if (boolParams != null) {

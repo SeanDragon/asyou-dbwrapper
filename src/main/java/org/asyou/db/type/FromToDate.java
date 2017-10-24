@@ -1,6 +1,6 @@
 package org.asyou.db.type;
 
-import java.util.Date;
+import pro.tools.time.DatePlus;
 
 /**
  * @author SeanDragon
@@ -10,8 +10,24 @@ import java.util.Date;
 public class FromToDate {
 
     private String fieldName;
-    private Date from;
-    private Date to;
+    private DatePlus from;
+    private DatePlus to;
+    private boolean isShort;
+
+    public static FromToDate buildShort(String fieldName, DatePlus from, DatePlus to) {
+        return new FromToDate(fieldName, from, to, true);
+    }
+
+    public static FromToDate buildLong(String fieldName, DatePlus from, DatePlus to) {
+        return new FromToDate(fieldName, from, to, false);
+    }
+
+    private FromToDate(String fieldName, DatePlus from, DatePlus to, boolean isShort) {
+        this.fieldName = fieldName;
+        this.from = from;
+        this.to = to;
+        this.isShort = isShort;
+    }
 
     public String getFieldName() {
         return fieldName;
@@ -22,21 +38,30 @@ public class FromToDate {
         return this;
     }
 
-    public Date getFrom() {
+    public DatePlus getFrom() {
         return from;
     }
 
-    public FromToDate setFrom(Date from) {
+    public FromToDate setFrom(DatePlus from) {
         this.from = from;
         return this;
     }
 
-    public Date getTo() {
+    public DatePlus getTo() {
         return to;
     }
 
-    public FromToDate setTo(Date to) {
+    public FromToDate setTo(DatePlus to) {
         this.to = to;
+        return this;
+    }
+
+    public boolean isShort() {
+        return isShort;
+    }
+
+    public FromToDate setShort(boolean aShort) {
+        isShort = aShort;
         return this;
     }
 }
