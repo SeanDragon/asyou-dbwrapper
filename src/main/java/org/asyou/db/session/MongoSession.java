@@ -152,8 +152,8 @@ public class MongoSession implements DbSession {
             FindMany findMany = mongoAdapter.collection(ToolTable.getName(data)).findMany(data);
             if (fromToDate != null) {
                 DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName()
-                        , new DateWrapper(fromToDate.getFrom())
-                        , new DateWrapper(fromToDate.getTo()));
+                        , new DateWrapper(fromToDate.getFrom().toDate())
+                        , new DateWrapper(fromToDate.getTo().toDate()));
                 findMany.dateFromTo(dateFromTo);
             }
             if (sortMap != null && !sortMap.isEmpty()) {
@@ -197,7 +197,7 @@ public class MongoSession implements DbSession {
         try {
             Count count = mongoAdapter.collection(ToolTable.getName(data)).count(data);
             if (fromToDate != null) {
-                DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName(), new DateWrapper(fromToDate.getFrom()), new DateWrapper(fromToDate.getTo()));
+                DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName(), new DateWrapper(fromToDate.getFrom().toDate()), new DateWrapper(fromToDate.getTo().toDate()));
                 count.dateFromTo(dateFromTo);
             }
             if (boolParams.getContain()) {
