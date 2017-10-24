@@ -261,7 +261,7 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
-    public <T,N> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam<N>> searchParamList) throws DbException {
+    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList) throws DbException {
         try {
             pageInfo = ToolPageInfo.valid(pageInfo);
 
@@ -271,7 +271,7 @@ public class SequoiaSession implements DbSession {
                 searchs[i] = Matchers.in(searchParam.getFieldName(), searchParam.getValues());
             }
             BSONObject query = Matchers.and(searchs);
-            FindMany findMany = sequoiaAdapter.collection(ToolTable.getName(tClass)).findMany(query);
+            FindMany findMany = sequoiaAdapter.collection(ToolTable.getName(tClass)).findMany(query).as(tClass);
             Page<T> page = findMany.page(pageInfo.getPageIndex(), pageInfo.getPageSize());
             PageData<T> pageData = PageConvert.page2pageData4sequoia(page);
             return pageData;
@@ -281,7 +281,7 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
-    public <T,N> long countAny(Class<T> tClass, List<SearchParam<N>> searchParamList) throws DbException {
+    public <T> long countAny(Class<T> tClass, List<SearchParam> searchParamList) throws DbException {
         try {
             BSONObject[] searchs = new BSONObject[searchParamList.size()];
             for (int i = 0; i < searchParamList.size(); i++) {

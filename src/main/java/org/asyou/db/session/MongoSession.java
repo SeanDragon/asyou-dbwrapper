@@ -216,7 +216,7 @@ public class MongoSession implements DbSession {
     }
 
     @Override
-    public <T,N> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam<N>> searchParamList) throws DbException {
+    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList) throws DbException {
         try {
             pageInfo = ToolPageInfo.valid(pageInfo);
             StringBuilder iQuery = new StringBuilder("{");
@@ -261,7 +261,7 @@ public class MongoSession implements DbSession {
     }
 
     @Override
-    public <T,N> long countAny(Class<T> tClass, List<SearchParam<N>> searchParamList) throws DbException {
+    public <T> long countAny(Class<T> tClass, List<SearchParam> searchParamList) throws DbException {
         try {
             StringBuilder iQuery = new StringBuilder("{");
             searchParamList.forEach(one -> {
