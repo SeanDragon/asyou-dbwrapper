@@ -114,9 +114,8 @@ public class MongoSession implements DbSession {
     }
 
     @Override
-    public <T> boolean updateMany(T data) throws DbException {
+    public <T> boolean updateMany(T queue, T data) throws DbException {
         try {
-            T queue = ToolPrimaryKey.getNewPrimaryKeyModel(data);
             boolean updateResult = mongoAdapter.collection(ToolTable.getName(data)).updateMany(queue, data).getModifiedCount() > 0;
             log.debug(MongoMsg.updateMany(updateResult).result());
             return updateResult;

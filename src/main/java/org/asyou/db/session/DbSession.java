@@ -36,7 +36,7 @@ public interface DbSession {
 
     <T> boolean updateOne(T data) throws DbException;
 
-    <T> boolean updateMany(T data) throws DbException;
+    <T> boolean updateMany(T queue, T data) throws DbException;
 
     <T> T findOne(T data) throws DbException;
 

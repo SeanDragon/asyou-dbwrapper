@@ -118,15 +118,14 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
-    public <T> boolean updateMany(T data) throws DbException {
+    public <T> boolean updateMany(T queue, T data) throws DbException {
         try {
-            T queue = ToolPrimaryKey.getNewPrimaryKeyModel(data);
             //>0 该值返回是影响的行数
             //0 匹配性错误，没有匹配到数据
             int updateResult = sequoiaAdapter.collection(ToolTable.getName(data)).update().updateManyT(queue, data);
             log.debug(SequoiaMsg.updateMany(updateResult).result());
             return updateResult > 0;
-        } catch (SequoiaAdapterException | IllegalAccessException | InstantiationException e) {
+        } catch (SequoiaAdapterException e) {
             log.warn(SequoiaMsg.updateMany(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
         }
