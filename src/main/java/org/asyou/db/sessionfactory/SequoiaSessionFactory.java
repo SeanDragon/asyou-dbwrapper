@@ -4,7 +4,7 @@ import org.asyou.db.exception.DbException;
 import org.asyou.db.session.DbSession;
 import org.asyou.db.session.SequoiaSession;
 import org.asyou.sequoia.dao.SequoiaAdapter;
-import org.asyou.sequoia.proxy.ProxyFactory;
+import org.asyou.sequoia.transaction.proxy.ProxyFactory;
 
 /**
  * @author SeanDragon
