@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import pro.tools.data.text.ToolJson;
 import pro.tools.data.text.ToolStr;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -266,6 +267,20 @@ public class SequoiaSession implements DbSession {
         } catch (Exception e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
+    }
+
+    @Override
+    public <T> Map<String, Number> sum(T data, List<String> fieldNameList) {
+        Map<String, Number> sumMap = new HashMap<>();
+        fieldNameList.forEach(fieldName -> {
+            try {
+                Number fieldNameSum = sequoiaAdapter.total(data).sum(fieldName);
+                sumMap.put(fieldName, fieldNameSum);
+            } catch (SequoiaAdapterException e) {
+                e.printStackTrace();
+            }
+        });
+        return sumMap;
     }
 
     @Override
