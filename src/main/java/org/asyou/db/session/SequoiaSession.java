@@ -153,7 +153,9 @@ public class SequoiaSession implements DbSession {
     @Override
     public <T> PageData<T> findPage(T data, PageInfo pageInfo) throws DbException {
         pageInfo = ToolPageInfo.valid(pageInfo);
-        return find(data, pageInfo.getFromToDate(), pageInfo.getBoolParams(), pageInfo.getSortMap(), pageInfo.getPageIndex(), pageInfo.getPageSize());
+        PageData<T> pageData = find(data, pageInfo.getFromToDate(), pageInfo.getBoolParams(), pageInfo.getSortMap(), pageInfo.getPageIndex(), pageInfo.getPageSize());
+        pageData.setPageInfo(pageInfo);
+        return pageData;
     }
 
     @Override
