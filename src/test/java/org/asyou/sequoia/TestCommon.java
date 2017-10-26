@@ -7,6 +7,9 @@ import org.asyou.db.sessionfactory.DbSessionFactory;
 import org.asyou.sequoia.dao.SequoiaAdapter;
 import org.junit.Test;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * @author SeanDragon
  * <p>
@@ -23,6 +26,17 @@ public class TestCommon extends SequoiaBootRunner {
             System.out.println(b);
         } catch (DbException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static final ExecutorService exec = Executors.newFixedThreadPool(100);
+
+    @Test
+    public void testFind() {
+        for (int i = 0; i < 100; i++) {
+            exec.execute(() -> {
+                //TODO
+            });
         }
     }
 }

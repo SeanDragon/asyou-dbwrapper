@@ -14,12 +14,23 @@ public class FromToDate {
     private DatePlus to;
     private boolean isShort;
 
+    public static FromToDate buildShort(String fieldName) {
+        return new FromToDate().setFieldName(fieldName).setShort(true);
+    }
+
     public static FromToDate buildShort(String fieldName, DatePlus from, DatePlus to) {
         return new FromToDate(fieldName, from, to, true);
     }
 
+    public static FromToDate buildLong(String fieldName) {
+        return new FromToDate().setFieldName(fieldName);
+    }
+
     public static FromToDate buildLong(String fieldName, DatePlus from, DatePlus to) {
-        return new FromToDate(fieldName, from, to, false);
+        return new FromToDate(fieldName, from, to, false).setShort(false);
+    }
+
+    public FromToDate() {
     }
 
     private FromToDate(String fieldName, DatePlus from, DatePlus to, boolean isShort) {
