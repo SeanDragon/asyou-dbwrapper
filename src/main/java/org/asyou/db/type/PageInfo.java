@@ -38,7 +38,7 @@ public class PageInfo implements Serializable {
      */
     private FromToDate fromToDate;
     /**
-     * 不由外部修改
+     * 公开修改
      */
     private boolean needFromToDate;
     /**
@@ -85,13 +85,17 @@ public class PageInfo implements Serializable {
     }
 
     public PageInfo setFromToDate(FromToDate fromToDate) {
-        this.needFromToDate = fromToDate != null;
         this.fromToDate = fromToDate;
         return this;
     }
 
     public boolean isNeedFromToDate() {
         return needFromToDate;
+    }
+
+    public PageInfo setNeedFromToDate(boolean needFromToDate) {
+        this.needFromToDate = needFromToDate;
+        return this;
     }
 
     public String getOrders() {
