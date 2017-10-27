@@ -24,6 +24,7 @@ import org.asyou.sequoia.type.DateTimeFromTo;
 import org.bson.BSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pro.tools.data.decimal.Decimal;
 import pro.tools.data.text.ToolJson;
 import pro.tools.data.text.ToolStr;
 
@@ -274,12 +275,13 @@ public class SequoiaSession implements DbSession {
     public <T> Map<String, Number> sum(T data, List<String> fieldNameList) {
         Map<String, Number> sumMap = new HashMap<>();
         fieldNameList.forEach(fieldName -> {
+            Number val = 0;
             try {
-                Number fieldNameSum = sequoiaAdapter.collection(ToolTable.getName(data)).total(data).sum(fieldName);
-                sumMap.put(fieldName, fieldNameSum);
+                val = Decimal.instance(sequoiaAdapter.collection(ToolTable.getName(data)).total(data).sum(fieldName)).moneyValue();
             } catch (SequoiaAdapterException e) {
                 e.printStackTrace();
             }
+            sumMap.put(fieldName, val);
         });
         return sumMap;
     }
