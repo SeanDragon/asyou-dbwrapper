@@ -6,7 +6,9 @@ import org.asyou.db.session.DbSession;
 import org.asyou.db.sessionfactory.DbSessionFactory;
 import org.asyou.sequoia.dao.SequoiaAdapter;
 import org.junit.Test;
+import pro.tools.data.text.ToolJson;
 
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -38,5 +40,12 @@ public class TestCommon extends SequoiaBootRunner {
                 //TODO
             });
         }
+    }
+
+    @Test
+    public void testDate() {
+        Date date = new Date();
+        String s = ToolJson.anyToJson(date);
+        System.out.println(s);
     }
 }

@@ -275,7 +275,7 @@ public class SequoiaSession implements DbSession {
         Map<String, Number> sumMap = new HashMap<>();
         fieldNameList.forEach(fieldName -> {
             try {
-                Number fieldNameSum = sequoiaAdapter.total(data).sum(fieldName);
+                Number fieldNameSum = sequoiaAdapter.collection(ToolTable.getName(data)).total(data).sum(fieldName);
                 sumMap.put(fieldName, fieldNameSum);
             } catch (SequoiaAdapterException e) {
                 e.printStackTrace();
