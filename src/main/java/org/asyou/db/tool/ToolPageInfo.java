@@ -5,6 +5,7 @@ import org.asyou.db.type.BoolParams;
 import org.asyou.db.type.FromToDate;
 import org.asyou.db.type.PageInfo;
 import pro.tools.time.DatePlus;
+import pro.tools.time.DateType;
 
 /**
  * Created By SeanDragon At 2016年11月25日, PM 01:26:21
@@ -42,7 +43,7 @@ public class ToolPageInfo {
                 fromToDate.setFrom(new DatePlus(1970, 1, 1));
             }
             if (fromToDate.getTo() == null) {
-                fromToDate.setTo(new DatePlus());
+                fromToDate.setTo(new DatePlus().toMaxDate(DateType.DAY));
             }
             pageInfo.setFromToDate(fromToDate).setNeedFromToDate(true);
         }
