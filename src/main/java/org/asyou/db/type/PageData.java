@@ -1,7 +1,5 @@
 package org.asyou.db.type;
 
-import org.asyou.db.tool.ToolPageInfo;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +19,7 @@ public class PageData<T> implements Serializable {
     private List<T> list;
 
     public static <T> PageData<T> getEmpty() {
-        return new PageData<>(0, ToolPageInfo.DEFAULT_SIZE, 0);
+        return new PageData<>(0, 1, 0);
     }
 
     /**
