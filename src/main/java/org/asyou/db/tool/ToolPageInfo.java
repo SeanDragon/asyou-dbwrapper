@@ -43,7 +43,7 @@ public class ToolPageInfo {
                 fromToDate.setFrom(new DatePlus(1970, 1, 1));
             }
             if (fromToDate.getTo() == null) {
-                fromToDate.setTo(new DatePlus().toMaxDate(DateType.DAY));
+                fromToDate.setTo(new DatePlus().addDay(1).toMinDate(DateType.DAY));
             }
             pageInfo.setFromToDate(fromToDate).setNeedFromToDate(true);
         }
