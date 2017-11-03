@@ -254,6 +254,12 @@ public class MongoSession implements DbSession {
 
             FindIterable<Document> findIterable = collection.find(query.toDocument());
 
+            Map<String, Integer> sortMap = pageInfo.getSortMap();
+            if(!sortMap.isEmpty()) {
+                IQuery sortQuery = new QueryFactory().createQuery(sortMap);
+                findIterable.sort(sortQuery.toDocument());
+            }
+
             //分页
             findIterable.skip(pageInfo.getPageIndex() * pageInfo.getPageSize())
                     .limit(pageInfo.getPageSize());
