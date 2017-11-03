@@ -22,6 +22,7 @@ import org.asyou.sequoia.query.QueryMatcher;
 import org.asyou.sequoia.type.DateFromTo;
 import org.asyou.sequoia.type.DateTimeFromTo;
 import org.bson.BSONObject;
+import org.bson.BasicBSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pro.tools.data.decimal.Decimal;
@@ -299,6 +300,12 @@ public class SequoiaSession implements DbSession {
             BSONObject query = Matchers.and(searchs);
 
             FindMany findMany = sequoiaAdapter.collection(ToolTable.getName(tClass)).findMany(query).as(tClass);
+            Map<String, Integer> sortMap = pageInfo.getSortMap();
+            if (!sortMap.isEmpty()) {
+                BasicBSONObject sortBSONObject = new BasicBSONObject(sortMap);
+                QueryMatcher sortQueryMatcher = new QueryMatcher(Matchers.and(sortBSONObject));
+                findMany.sort(sortQueryMatcher);
+            }
             Page<T> page = findMany.page(pageInfo.getPageIndex(), pageInfo.getPageSize());
             PageData<T> pageData = PageConvert.page2pageData4sequoia(page);
             return pageData;
