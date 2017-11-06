@@ -16,6 +16,7 @@ import org.asyou.db.type.SearchParam;
 import org.asyou.sequoia.Count;
 import org.asyou.sequoia.FindMany;
 import org.asyou.sequoia.Page;
+import org.asyou.sequoia.Total;
 import org.asyou.sequoia.dao.SequoiaAdapter;
 import org.asyou.sequoia.exception.SequoiaAdapterException;
 import org.asyou.sequoia.model.Matchers;
@@ -30,7 +31,6 @@ import pro.tools.data.decimal.Decimal;
 import pro.tools.data.text.ToolJson;
 import pro.tools.data.text.ToolStr;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -274,27 +274,53 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
-    public <T> Map<String, Number> sum(T data, List<String> fieldNameList) {
-        Map<String, Number> sumMap = new HashMap<>(fieldNameList.size());
-        fieldNameList.forEach(fieldName -> {
-            Number val = 0;
-            try {
-                val = Decimal.instance(sequoiaAdapter.collection(ToolTable.getName(data)).total(data).sum(fieldName)).moneyValue();
-            } catch (SequoiaAdapterException e) {
-                log.warn("total统计出错",e);
-            }
-            sumMap.put(fieldName, val);
-        });
-        return sumMap;
-    }
-
-    @Override
-    public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap) {
+    public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo) {
         Map<String, Number> sumMap = Maps.newHashMapWithExpectedSize(fieldNameMap.size());
         fieldNameMap.forEach((key, val) -> {
             Number vale = 0D;
             try {
-                Number number = sequoiaAdapter.collection(ToolTable.getName(data)).total(data).sum(val);
+                Total total = sequoiaAdapter.collection(ToolTable.getName(data)).total(data);
+
+                FromToDate fromToDate = pageInfo.getFromToDate();
+                BoolParams boolParams = pageInfo.getBoolParams();
+
+                QueryMatcher queryMatcher = new QueryMatcher(data);
+                boolean haveMatcher = false;
+
+                if (fromToDate != null) {
+                    if (fromToDate.isShort()) {
+                        DateFromTo dateFromTo = new DateFromTo(fromToDate.getFieldName());
+                        dateFromTo.setFrom(fromToDate.getFrom().getLocalDateTime().toLocalDate());
+                        dateFromTo.setTo(fromToDate.getTo().getLocalDateTime().toLocalDate());
+                        queryMatcher.dateFromTo(dateFromTo);
+                    } else {
+                        DateTimeFromTo dateTimeFromTo = new DateTimeFromTo(fromToDate.getFieldName());
+                        dateTimeFromTo.setFrom(fromToDate.getFrom().getLocalDateTime());
+                        dateTimeFromTo.setTo(fromToDate.getTo().getLocalDateTime());
+                        queryMatcher.dateTimeFromTo(dateTimeFromTo);
+                    }
+                    haveMatcher = true;
+                }
+
+                if (boolParams != null) {
+                    //FIXME 待测试
+                    if (boolParams.getContain()) {
+                        queryMatcher.contain();
+                    }
+                    if (boolParams.getOr()) {
+                        queryMatcher.or();
+                    }
+                    if (boolParams.getNot()) {
+                        queryMatcher.not();
+                    }
+                    haveMatcher = true;
+                }
+
+                if(haveMatcher) {
+                    total.matcher(queryMatcher);
+                }
+
+                Number number = total.sum(val);
                 vale = Decimal.instance(number).moneyValue();
             } catch (SequoiaAdapterException e) {
                 log.warn("total统计出错！", e);

@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import pro.tools.data.text.ToolJson;
 import pro.tools.data.text.ToolStr;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -216,17 +215,13 @@ public class MongoSession implements DbSession {
     }
 
     @Override
-    public <T> Map<String, Number> sum(T data, List<String> fieldNameList) {
-        Map<String, Number> sumMap = new HashMap<>();
-        fieldNameList.forEach(fieldName -> {
-            Number fieldNameSum = mongoAdapter.total(data, fieldName).sum(fieldName);
-            sumMap.put(fieldName, fieldNameSum);
-        });
-        return sumMap;
-    }
-
-    @Override
-    public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap) {
+    public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo) {
+        // Map<String, Number> sumMap = new HashMap<>();
+        // fieldNameList.forEach(fieldName -> {
+        //     Number fieldNameSum = mongoAdapter.total(data, fieldName).sum(fieldName);
+        //     sumMap.put(fieldName, fieldNameSum);
+        // });
+        // return sumMap;
         return null;
     }
 
@@ -260,7 +255,7 @@ public class MongoSession implements DbSession {
             FindIterable<Document> findIterable = collection.find(query.toDocument());
 
             Map<String, Integer> sortMap = pageInfo.getSortMap();
-            if(!sortMap.isEmpty()) {
+            if (!sortMap.isEmpty()) {
                 IQuery sortQuery = new QueryFactory().createQuery(sortMap);
                 findIterable.sort(sortQuery.toDocument());
             }

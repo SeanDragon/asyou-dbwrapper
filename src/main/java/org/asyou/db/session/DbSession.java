@@ -54,9 +54,7 @@ public interface DbSession {
 
     <T> PageData<T> find(T t, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException;
 
-    <T> Map<String, Number> sum(T data, List<String> fieldNameList);
-
-    <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap);
+    <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap,PageInfo pageInfo);
 
     <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList) throws DbException;
 
