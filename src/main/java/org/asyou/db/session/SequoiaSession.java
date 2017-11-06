@@ -1,5 +1,6 @@
 package org.asyou.db.session;
 
+import com.google.common.collect.Maps;
 import org.asyou.db.exception.DbErrorCode;
 import org.asyou.db.exception.DbException;
 import org.asyou.db.exception.SequoiaMsg;
@@ -274,15 +275,31 @@ public class SequoiaSession implements DbSession {
 
     @Override
     public <T> Map<String, Number> sum(T data, List<String> fieldNameList) {
-        Map<String, Number> sumMap = new HashMap<>();
+        Map<String, Number> sumMap = new HashMap<>(fieldNameList.size());
         fieldNameList.forEach(fieldName -> {
             Number val = 0;
             try {
                 val = Decimal.instance(sequoiaAdapter.collection(ToolTable.getName(data)).total(data).sum(fieldName)).moneyValue();
             } catch (SequoiaAdapterException e) {
-                e.printStackTrace();
+                log.warn("total统计出错",e);
             }
             sumMap.put(fieldName, val);
+        });
+        return sumMap;
+    }
+
+    @Override
+    public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap) {
+        Map<String, Number> sumMap = Maps.newHashMapWithExpectedSize(fieldNameMap.size());
+        fieldNameMap.forEach((key, val) -> {
+            Number vale = 0D;
+            try {
+                Number number = sequoiaAdapter.collection(ToolTable.getName(data)).total(data).sum(val);
+                vale = Decimal.instance(number).moneyValue();
+            } catch (SequoiaAdapterException e) {
+                log.warn("total统计出错！", e);
+            }
+            sumMap.put(key, vale);
         });
         return sumMap;
     }

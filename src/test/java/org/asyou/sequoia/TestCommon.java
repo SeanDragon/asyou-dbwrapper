@@ -6,8 +6,11 @@ import org.asyou.db.session.DbSession;
 import org.asyou.db.sessionfactory.DbSessionFactory;
 import org.asyou.sequoia.dao.SequoiaAdapter;
 import org.junit.Test;
+import pro.tools.data.decimal.Decimal;
 import pro.tools.data.text.ToolJson;
 
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,5 +50,11 @@ public class TestCommon extends SequoiaBootRunner {
         Date date = new Date();
         String s = ToolJson.anyToJson(date);
         System.out.println(s);
+    }
+
+    @Test
+    public void testDecimal1() {
+        Decimal.setDefaultMathContext(new MathContext(32, RoundingMode.HALF_UP));
+        System.out.println(Decimal.instance(0.0D).sub(0.0D).moneyValue());
     }
 }

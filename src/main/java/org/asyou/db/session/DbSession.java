@@ -56,6 +56,8 @@ public interface DbSession {
 
     <T> Map<String, Number> sum(T data, List<String> fieldNameList);
 
+    <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap);
+
     <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList) throws DbException;
 
     <T> long countAny(Class<T> tClass, List<SearchParam> searchParamList) throws DbException;

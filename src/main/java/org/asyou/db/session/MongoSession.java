@@ -226,6 +226,11 @@ public class MongoSession implements DbSession {
     }
 
     @Override
+    public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap) {
+        return null;
+    }
+
+    @Override
     public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList) throws DbException {
         try {
             pageInfo = ToolPageInfo.valid(pageInfo);
