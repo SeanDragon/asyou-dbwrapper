@@ -59,7 +59,7 @@
         <dependency>
             <groupId>org.asyou</groupId>
             <artifactId>asyou-mongowrapper</artifactId>
-            <version>1.0</version>
+            <version>1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.code.gson</groupId>
@@ -70,7 +70,7 @@
         <dependency>
             <groupId>org.asyou</groupId>
             <artifactId>asyou-sequoiawrapper</artifactId>
-            <version>1.0</version>
+            <version>1.1</version>
         </dependency>
     </dependencies>
 </project>

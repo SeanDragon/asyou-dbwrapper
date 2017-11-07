@@ -14,13 +14,14 @@ import org.asyou.db.type.FromToDate;
 import org.asyou.db.type.PageData;
 import org.asyou.db.type.PageInfo;
 import org.asyou.db.type.SearchParam;
+import org.asyou.sequoia.Aggregate;
 import org.asyou.sequoia.Count;
-import org.asyou.sequoia.FindMany;
+import org.asyou.sequoia.Find;
 import org.asyou.sequoia.Page;
-import org.asyou.sequoia.Total;
 import org.asyou.sequoia.dao.SequoiaAdapter;
 import org.asyou.sequoia.exception.SequoiaAdapterException;
 import org.asyou.sequoia.model.Matchers;
+import org.asyou.sequoia.query.QueryAggregate;
 import org.asyou.sequoia.query.QueryMatcher;
 import org.asyou.sequoia.query.QueryObject;
 import org.asyou.sequoia.type.DateFromTo;
@@ -84,7 +85,7 @@ public class SequoiaSession implements DbSession {
         try {
             //1 成功
             //0 匹配性错误，如：未匹配到和匹配超过一条
-            int deleteResult = sequoiaAdapter.collection(ToolTable.getName(data)).delete(data).deleteOneT();
+            int deleteResult = sequoiaAdapter.collection(ToolTable.getName(data)).delete().deleteOneT(data);
             log.debug(SequoiaMsg.deleteOne(deleteResult).result());
             return deleteResult == 1;
         } catch (SequoiaAdapterException e) {
@@ -98,7 +99,7 @@ public class SequoiaSession implements DbSession {
         try {
             //>0 该值返回是影响的行数
             //0 匹配性错误，没有匹配到数据
-            int deleteResult = sequoiaAdapter.collection(ToolTable.getName(data)).delete(data).deleteManyT();
+            int deleteResult = sequoiaAdapter.collection(ToolTable.getName(data)).delete().deleteManyT(data);
             log.debug(SequoiaMsg.deleteMany(deleteResult).result());
             return deleteResult > 0;
         } catch (SequoiaAdapterException e) {
@@ -139,7 +140,7 @@ public class SequoiaSession implements DbSession {
     @Override
     public <T> T findOne(T data) throws DbException {
         try {
-            return sequoiaAdapter.collection(ToolTable.getName(data)).findOne(data).get();
+            return sequoiaAdapter.collection(ToolTable.getName(data)).find(data).findOne();
         } catch (SequoiaAdapterException e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
@@ -174,7 +175,7 @@ public class SequoiaSession implements DbSession {
     @Override
     public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, QueryObject selector, List<SearchParam> searchParamList) throws DbException {
         try {
-            FindMany findMany = sequoiaAdapter.collection(ToolTable.getName(data)).findMany(data);
+            Find find = sequoiaAdapter.collection(ToolTable.getName(data)).find(data);
             QueryMatcher queryMatcher = new QueryMatcher(data);
             boolean haveMatcher = false;
 
@@ -203,7 +204,7 @@ public class SequoiaSession implements DbSession {
                 //FIXME 待测试
                 String sortStr = ToolJson.mapToJson(sortMap);
                 if (ToolStr.notBlank(sortStr)) {
-                    findMany.sort(new QueryMatcher(sortStr));
+                    find.sort(new QueryMatcher(sortStr));
                     haveMatcher = true;
                 }
             }
@@ -222,14 +223,14 @@ public class SequoiaSession implements DbSession {
             }
 
             if (haveMatcher) {
-                findMany.matcher(queryMatcher);
+                find.matcher(queryMatcher);
             }
 
             if (selector != null) {
-                findMany.selector(selector);
+                find.selector(selector);
             }
 
-            Page<T> page = findMany.page(pageIndex, pageSize);
+            Page<T> page = find.page(pageIndex, pageSize);
             PageData<T> pageData = PageConvert.page2pageData4sequoia(page);
             return pageData;
         } catch (Exception e) {
@@ -255,7 +256,7 @@ public class SequoiaSession implements DbSession {
     @Override
     public <T> long count(T data, FromToDate fromToDate, BoolParams boolParams) throws DbException {
         try {
-            Count count = sequoiaAdapter.collection(ToolTable.getName(data)).count(data);
+            Count count = sequoiaAdapter.collection(ToolTable.getName(data)).count();
             QueryMatcher queryMatcher = new QueryMatcher(data);
             boolean haveMatcher = false;
 
@@ -292,7 +293,7 @@ public class SequoiaSession implements DbSession {
                 count.matcher(queryMatcher);
             }
 
-            return count.getCount();
+            return count.count();
         } catch (Exception e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
@@ -304,12 +305,13 @@ public class SequoiaSession implements DbSession {
         fieldNameMap.forEach((key, val) -> {
             Number vale = 0D;
             try {
-                Total total = sequoiaAdapter.collection(ToolTable.getName(data)).total(data);
+                Aggregate aggregate = sequoiaAdapter.collection(ToolTable.getName(data)).aggregate();
 
                 FromToDate fromToDate = pageInfo.getFromToDate();
                 BoolParams boolParams = pageInfo.getBoolParams();
 
                 QueryMatcher queryMatcher = new QueryMatcher(data);
+
                 boolean haveMatcher = false;
 
                 if (searchParamList != null && !searchParamList.isEmpty()) {
@@ -348,10 +350,11 @@ public class SequoiaSession implements DbSession {
                 }
 
                 if (haveMatcher) {
-                    total.matcher(queryMatcher);
+                    QueryAggregate queryAggregate = new QueryAggregate(queryMatcher.toBSONObject());
+                    aggregate.matcher(queryAggregate);
                 }
 
-                Number number = total.sum(val);
+                Number number = aggregate.sum(val);
                 vale = Decimal.instance(number).moneyValue();
             } catch (SequoiaAdapterException e) {
                 log.warn("total统计出错！", e);
@@ -372,8 +375,7 @@ public class SequoiaSession implements DbSession {
             pageInfo = ToolPageInfo.valid(pageInfo);
 
             List<BSONObject> searchs = Lists.newArrayList();
-            for (int i = 0; i < searchParamList.size(); i++) {
-                SearchParam searchParam = searchParamList.get(i);
+            for (SearchParam searchParam : searchParamList) {
                 searchs.add(Matchers.in(searchParam.getFieldName(), searchParam.getValues()));
             }
 
@@ -390,19 +392,19 @@ public class SequoiaSession implements DbSession {
 
             BSONObject query = Matchers.and(searchs);
 
-            FindMany findMany = sequoiaAdapter.collection(ToolTable.getName(tClass)).findMany(query).as(tClass);
+            Find find = sequoiaAdapter.collection(ToolTable.getName(tClass)).find(query).as(tClass);
             Map<String, Integer> sortMap = pageInfo.getSortMap();
             if (!sortMap.isEmpty()) {
                 BasicBSONObject sortBSONObject = new BasicBSONObject(sortMap);
                 QueryMatcher sortQueryMatcher = new QueryMatcher(Matchers.and(sortBSONObject));
-                findMany.sort(sortQueryMatcher);
+                find.sort(sortQueryMatcher);
             }
 
             if (selector != null) {
-                findMany.selector(selector);
+                find.selector(selector);
             }
 
-            Page<T> page = findMany.page(pageInfo.getPageIndex(), pageInfo.getPageSize());
+            Page<T> page = find.page(pageInfo.getPageIndex(), pageInfo.getPageSize());
             PageData<T> pageData = PageConvert.page2pageData4sequoia(page);
             return pageData;
         } catch (Exception e) {
@@ -424,8 +426,7 @@ public class SequoiaSession implements DbSession {
                 searchs[i] = Matchers.in(searchParam.getFieldName(), searchParam.getValues());
             }
             BSONObject query = Matchers.and(searchs);
-            Count count = sequoiaAdapter.collection(ToolTable.getName(tClass)).count(query);
-            return count.getCount();
+            return sequoiaAdapter.collection(ToolTable.getName(tClass)).count().count(query);
         } catch (Exception e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
