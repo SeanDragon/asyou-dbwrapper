@@ -6,6 +6,7 @@ import org.asyou.db.type.FromToDate;
 import org.asyou.db.type.PageData;
 import org.asyou.db.type.PageInfo;
 import org.asyou.db.type.SearchParam;
+import org.asyou.sequoia.query.QueryObject;
 
 import java.util.List;
 import java.util.Map;
@@ -52,9 +53,15 @@ public interface DbSession {
 
     <T> long count(T data, FromToDate fromToDate, BoolParams boolParams) throws DbException;
 
+    <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, QueryObject selector) throws DbException;
+
     <T> PageData<T> find(T t, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException;
 
-    <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap,PageInfo pageInfo);
+    <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo, List<SearchParam> searchParamList);
+
+    <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo);
+
+    <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList, QueryObject selector) throws DbException;
 
     <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList) throws DbException;
 

@@ -1,5 +1,6 @@
 package org.asyou.db.session;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.asyou.db.exception.DbErrorCode;
 import org.asyou.db.exception.DbException;
@@ -21,6 +22,7 @@ import org.asyou.sequoia.dao.SequoiaAdapter;
 import org.asyou.sequoia.exception.SequoiaAdapterException;
 import org.asyou.sequoia.model.Matchers;
 import org.asyou.sequoia.query.QueryMatcher;
+import org.asyou.sequoia.query.QueryObject;
 import org.asyou.sequoia.type.DateFromTo;
 import org.asyou.sequoia.type.DateTimeFromTo;
 import org.bson.BSONObject;
@@ -162,7 +164,7 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException {
+    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, QueryObject selector) throws DbException {
         try {
             FindMany findMany = sequoiaAdapter.collection(ToolTable.getName(data)).findMany(data);
             QueryMatcher queryMatcher = new QueryMatcher(data);
@@ -191,7 +193,6 @@ public class SequoiaSession implements DbSession {
                 }
             }
 
-            //FIXME 待测试
             if (boolParams != null) {
                 if (boolParams.getContain()) {
                     queryMatcher.contain();
@@ -209,12 +210,21 @@ public class SequoiaSession implements DbSession {
                 findMany.matcher(queryMatcher);
             }
 
+            if (selector != null) {
+                findMany.selector(selector);
+            }
+
             Page<T> page = findMany.page(pageIndex, pageSize);
             PageData<T> pageData = PageConvert.page2pageData4sequoia(page);
             return pageData;
         } catch (Exception e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
+    }
+
+    @Override
+    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException {
+        return find(data, fromToDate, boolParams, sortMap, pageIndex, pageSize, null);
     }
 
     @Override
@@ -274,7 +284,7 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
-    public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo) {
+    public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo, List<SearchParam> searchParamList) {
         Map<String, Number> sumMap = Maps.newHashMapWithExpectedSize(fieldNameMap.size());
         fieldNameMap.forEach((key, val) -> {
             Number vale = 0D;
@@ -286,6 +296,12 @@ public class SequoiaSession implements DbSession {
 
                 QueryMatcher queryMatcher = new QueryMatcher(data);
                 boolean haveMatcher = false;
+
+                if (searchParamList != null && !searchParamList.isEmpty()) {
+                    for (SearchParam searchParam : searchParamList) {
+                        queryMatcher.getBsonObject().putAll(Matchers.in(searchParam.getFieldName(), searchParam.getValues()));
+                    }
+                }
 
                 if (fromToDate != null) {
                     if (fromToDate.isShort()) {
@@ -316,7 +332,7 @@ public class SequoiaSession implements DbSession {
                     haveMatcher = true;
                 }
 
-                if(haveMatcher) {
+                if (haveMatcher) {
                     total.matcher(queryMatcher);
                 }
 
@@ -331,15 +347,32 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList) throws DbException {
+    public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo) {
+        return sum(data, fieldNameMap, pageInfo, null);
+    }
+
+    @Override
+    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList, QueryObject selector) throws DbException {
         try {
             pageInfo = ToolPageInfo.valid(pageInfo);
 
-            BSONObject[] searchs = new BSONObject[searchParamList.size()];
+            List<BSONObject> searchs = Lists.newArrayList();
             for (int i = 0; i < searchParamList.size(); i++) {
                 SearchParam searchParam = searchParamList.get(i);
-                searchs[i] = Matchers.in(searchParam.getFieldName(), searchParam.getValues());
+                searchs.add(Matchers.in(searchParam.getFieldName(), searchParam.getValues()));
             }
+
+            FromToDate fromToDate = pageInfo.getFromToDate();
+            if (fromToDate != null) {
+                if (fromToDate.isShort()) {
+                    searchs.add(Matchers.gte(fromToDate.getFieldName(), fromToDate.getFrom().getLocalDateTime().toLocalDate()));
+                    searchs.add(Matchers.lte(fromToDate.getFieldName(), fromToDate.getTo().getLocalDateTime().toLocalDate()));
+                } else {
+                    searchs.add(Matchers.gte(fromToDate.getFieldName(), fromToDate.getFrom().getLocalDateTime()));
+                    searchs.add(Matchers.lte(fromToDate.getFieldName(), fromToDate.getTo().getLocalDateTime()));
+                }
+            }
+
             BSONObject query = Matchers.and(searchs);
 
             FindMany findMany = sequoiaAdapter.collection(ToolTable.getName(tClass)).findMany(query).as(tClass);
@@ -349,12 +382,22 @@ public class SequoiaSession implements DbSession {
                 QueryMatcher sortQueryMatcher = new QueryMatcher(Matchers.and(sortBSONObject));
                 findMany.sort(sortQueryMatcher);
             }
+
+            if (selector != null) {
+                findMany.selector(selector);
+            }
+
             Page<T> page = findMany.page(pageInfo.getPageIndex(), pageInfo.getPageSize());
             PageData<T> pageData = PageConvert.page2pageData4sequoia(page);
             return pageData;
         } catch (Exception e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
+    }
+
+    @Override
+    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList) throws DbException {
+        return findAny(pageInfo, tClass, searchParamList, null);
     }
 
     @Override

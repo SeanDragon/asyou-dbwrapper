@@ -41,7 +41,7 @@ public class SearchParam<T> implements java.io.Serializable {
         return fieldName;
     }
 
-    public SearchParam setValues(List values) {
+    public SearchParam setValues(List<T> values) {
         this.values = values;
         return this;
     }

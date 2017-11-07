@@ -25,6 +25,7 @@ import org.asyou.mongo.query.IQuery;
 import org.asyou.mongo.query.QueryFactory;
 import org.asyou.mongo.wrapper.DateFromTo;
 import org.asyou.mongo.wrapper.DateWrapper;
+import org.asyou.sequoia.query.QueryObject;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,7 +147,8 @@ public class MongoSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException {
+    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, QueryObject selector) throws DbException {
+
         try {
             FindMany findMany = mongoAdapter.collection(ToolTable.getName(data)).findMany(data);
             if (fromToDate != null) {
@@ -173,12 +175,22 @@ public class MongoSession implements DbSession {
                     findMany.NOT();
                 }
             }
+
+            if (selector != null) {
+                //TODO 加上字段筛选
+            }
+
             Page<T> page = findMany.page(pageIndex, pageSize);
             PageData<T> pageData = PageConvert.page2pageData4mongo(page);
             return pageData;
         } catch (Exception e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
+    }
+
+    @Override
+    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException {
+        return find(data, fromToDate, boolParams, sortMap, pageIndex, pageSize, null);
     }
 
     @Override
@@ -214,8 +226,10 @@ public class MongoSession implements DbSession {
         }
     }
 
+
+
     @Override
-    public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo) {
+    public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo, List<SearchParam> searchParamList) {
         // Map<String, Number> sumMap = new HashMap<>();
         // fieldNameList.forEach(fieldName -> {
         //     Number fieldNameSum = mongoAdapter.total(data, fieldName).sum(fieldName);
@@ -226,7 +240,13 @@ public class MongoSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList) throws DbException {
+    public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo) {
+        return null;
+    }
+
+    @Override
+    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList, QueryObject selector) throws DbException {
+
         try {
             pageInfo = ToolPageInfo.valid(pageInfo);
             StringBuilder iQuery = new StringBuilder("{");
@@ -249,6 +269,8 @@ public class MongoSession implements DbSession {
                     );
 
             IQuery query = new QueryFactory().createQuery(iQuery.toString());
+
+            //TODO selector
 
             long totalCount = collection.count(query.toDocument());
 
@@ -274,6 +296,11 @@ public class MongoSession implements DbSession {
         } catch (Exception e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
+    }
+
+    @Override
+    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList) throws DbException {
+        return findAny(pageInfo, tClass, searchParamList, null);
     }
 
     @Override
