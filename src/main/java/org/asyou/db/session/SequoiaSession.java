@@ -164,7 +164,15 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, QueryObject selector) throws DbException {
+    public <T> PageData<T> findPage(T data, PageInfo pageInfo, List<SearchParam> searchParamList) throws DbException {
+        pageInfo = ToolPageInfo.valid(pageInfo);
+        PageData<T> pageData = find(data, pageInfo.getFromToDate(), pageInfo.getBoolParams(), pageInfo.getSortMap(), pageInfo.getPageIndex(), pageInfo.getPageSize(), null, searchParamList);
+        pageData.setPageInfo(pageInfo);
+        return pageData;
+    }
+
+    @Override
+    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, QueryObject selector, List<SearchParam> searchParamList) throws DbException {
         try {
             FindMany findMany = sequoiaAdapter.collection(ToolTable.getName(data)).findMany(data);
             QueryMatcher queryMatcher = new QueryMatcher(data);
@@ -184,6 +192,13 @@ public class SequoiaSession implements DbSession {
                 }
                 haveMatcher = true;
             }
+
+            if (searchParamList != null && !searchParamList.isEmpty()) {
+                for (SearchParam searchParam : searchParamList) {
+                    queryMatcher.getBsonObject().putAll(Matchers.in(searchParam.getFieldName(), searchParam.getValues()));
+                }
+            }
+
             if (sortMap != null && !sortMap.isEmpty()) {
                 //FIXME 待测试
                 String sortStr = ToolJson.mapToJson(sortMap);
@@ -224,7 +239,7 @@ public class SequoiaSession implements DbSession {
 
     @Override
     public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException {
-        return find(data, fromToDate, boolParams, sortMap, pageIndex, pageSize, null);
+        return find(data, fromToDate, boolParams, sortMap, pageIndex, pageSize, null, null);
     }
 
     @Override

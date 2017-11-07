@@ -53,7 +53,9 @@ public interface DbSession {
 
     <T> long count(T data, FromToDate fromToDate, BoolParams boolParams) throws DbException;
 
-    <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, QueryObject selector) throws DbException;
+    <T> PageData<T> findPage(T data, PageInfo pageInfo, List<SearchParam> searchParamList) throws DbException;
+
+    <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, QueryObject selector, List<SearchParam> searchParamList) throws DbException;
 
     <T> PageData<T> find(T t, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException;
 

@@ -147,7 +147,13 @@ public class MongoSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, QueryObject selector) throws DbException {
+    public <T> PageData<T> findPage(T data, PageInfo pageInfo, List<SearchParam> searchParamList) throws DbException {
+        pageInfo = ToolPageInfo.valid(pageInfo);
+        return find(data, pageInfo.getFromToDate(), pageInfo.getBoolParams(), pageInfo.getSortMap(), pageInfo.getPageIndex(), pageInfo.getPageSize(), null, searchParamList);
+    }
+
+    @Override
+    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, QueryObject selector, List<SearchParam> searchParamList) throws DbException {
 
         try {
             FindMany findMany = mongoAdapter.collection(ToolTable.getName(data)).findMany(data);
@@ -190,7 +196,7 @@ public class MongoSession implements DbSession {
 
     @Override
     public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException {
-        return find(data, fromToDate, boolParams, sortMap, pageIndex, pageSize, null);
+        return find(data, fromToDate, boolParams, sortMap, pageIndex, pageSize, null, null);
     }
 
     @Override
@@ -225,8 +231,6 @@ public class MongoSession implements DbSession {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
     }
-
-
 
     @Override
     public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo, List<SearchParam> searchParamList) {
