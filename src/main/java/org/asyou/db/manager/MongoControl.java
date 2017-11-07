@@ -4,8 +4,8 @@ import org.asyou.db.exception.DbErrorCode;
 import org.asyou.db.exception.DbException;
 import org.asyou.db.sessionfactory.DbSessionFactory;
 import org.asyou.db.sessionfactory.MongoSessionFactory;
-import org.asyou.mongo.base.MongoConfig;
-import org.asyou.mongo.base.MongoManager;
+import org.asyou.mongo.base.Config;
+import org.asyou.mongo.base.ConfigManager;
 import org.asyou.mongo.dao.MongoAdapter;
 
 import java.util.Map;
@@ -36,17 +36,9 @@ public class MongoControl extends DbControl {
     public void addSessionFactory(DbProp dbProp) throws DbException {
         MongoProp prop = (MongoProp) dbProp;
 
-        MongoConfig mongoConfig = new MongoConfig();
-        mongoConfig.setId(prop.getId());
-        mongoConfig.setHostName(prop.getHostName());
-        mongoConfig.setPort(prop.getPort());
-        mongoConfig.setDatabaseName(prop.getDbName());
-        mongoConfig.setPoolSize(prop.getPoolSize());
-        mongoConfig.setMaxWaitTime(prop.getMaxWaitTime());
-        mongoConfig.setConnectTimeout(prop.getConnectTimeout());
-        mongoConfig.setBlockSize(prop.getBlockSize());
+        Config config = new Config(prop.getId(),prop.getHostName(),prop.getPort(),prop.getDbName());
         try {
-            MongoManager.putMongoConfig(mongoConfig);
+            ConfigManager.addConfig(config);
             dbSessionFactoryMap.put(dbProp.getId(), buildNewSessionFactory(dbProp.getId()));
         } catch (Exception e) {
             throw new DbException("MongoManager 添加新的mongoConfig失败", e, DbErrorCode.INIT_FAIL);

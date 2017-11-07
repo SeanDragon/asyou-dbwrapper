@@ -4,17 +4,17 @@ package org.asyou.db.sessionfactory;
 import org.asyou.db.exception.DbException;
 import org.asyou.db.session.DbSession;
 import org.asyou.db.session.MongoSession;
-import org.asyou.mongo.dao.IMongoAdapter;
+import org.asyou.mongo.dao.MongoAdapter;
 
 /**
  * @author SeanDragon Create By 2017-06-13 14:36
  */
 public class MongoSessionFactory implements DbSessionFactory {
 
-    private IMongoAdapter mongoAdapter;
+    private MongoAdapter mongoAdapter;
     private DbSession instanceSession;
 
-    public MongoSessionFactory(IMongoAdapter adapter) {
+    public MongoSessionFactory(MongoAdapter adapter) {
         this.mongoAdapter = adapter;
     }
 
