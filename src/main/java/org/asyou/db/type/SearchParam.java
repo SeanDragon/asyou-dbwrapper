@@ -28,7 +28,7 @@ public class SearchParam<T> implements java.io.Serializable {
         this.values = Lists.newArrayList(values);
     }
 
-    public List getValues() {
+    public List<T> getValues() {
         return values;
     }
 
