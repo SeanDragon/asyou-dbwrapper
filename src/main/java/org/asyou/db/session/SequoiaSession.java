@@ -258,7 +258,6 @@ public class SequoiaSession implements DbSession {
         try {
             Count count = sequoiaAdapter.collection(ToolTable.getName(data)).count();
             QueryMatcher queryMatcher = new QueryMatcher(data);
-            boolean haveMatcher = false;
 
             if (fromToDate != null) {
                 if (fromToDate.isShort()) {
@@ -272,11 +271,9 @@ public class SequoiaSession implements DbSession {
                     dateTimeFromTo.setTo(fromToDate.getTo().getLocalDateTime());
                     queryMatcher.dateTimeFromTo(dateTimeFromTo);
                 }
-                haveMatcher = true;
             }
 
             if (boolParams != null) {
-                //FIXME 待测试
                 if (boolParams.getContain()) {
                     queryMatcher.contain();
                 }
@@ -286,12 +283,9 @@ public class SequoiaSession implements DbSession {
                 if (boolParams.getNot()) {
                     queryMatcher.not();
                 }
-                haveMatcher = true;
             }
 
-            if (haveMatcher) {
-                count.matcher(queryMatcher);
-            }
+            count.matcher(queryMatcher);
 
             return count.count();
         } catch (Exception e) {
@@ -312,8 +306,6 @@ public class SequoiaSession implements DbSession {
 
                 QueryMatcher queryMatcher = new QueryMatcher(data);
 
-                boolean haveMatcher = false;
-
                 if (searchParamList != null && !searchParamList.isEmpty()) {
                     for (SearchParam searchParam : searchParamList) {
                         queryMatcher.getBsonObject().putAll(Matchers.in(searchParam.getFieldName(), searchParam.getValues()));
@@ -332,7 +324,6 @@ public class SequoiaSession implements DbSession {
                         dateTimeFromTo.setTo(fromToDate.getTo().getLocalDateTime());
                         queryMatcher.dateTimeFromTo(dateTimeFromTo);
                     }
-                    haveMatcher = true;
                 }
 
                 if (boolParams != null) {
@@ -346,13 +337,10 @@ public class SequoiaSession implements DbSession {
                     if (boolParams.getNot()) {
                         queryMatcher.not();
                     }
-                    haveMatcher = true;
                 }
 
-                if (haveMatcher) {
-                    QueryAggregate queryAggregate = new QueryAggregate(queryMatcher.toBSONObject());
-                    aggregate.matcher(queryAggregate);
-                }
+                QueryAggregate queryAggregate = new QueryAggregate(queryMatcher.toBSONObject());
+                aggregate.matcher(queryAggregate);
 
                 Number number = aggregate.sum(val);
                 vale = Decimal.instance(number).moneyValue();
