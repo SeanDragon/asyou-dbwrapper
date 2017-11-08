@@ -2,11 +2,11 @@ package org.asyou.db.session;
 
 import org.asyou.db.exception.DbException;
 import org.asyou.db.type.BoolParams;
+import org.asyou.db.type.FieldFilter;
 import org.asyou.db.type.FromToDate;
 import org.asyou.db.type.PageData;
 import org.asyou.db.type.PageInfo;
 import org.asyou.db.type.SearchParam;
-import org.asyou.sequoia.query.QueryObject;
 
 import java.util.List;
 import java.util.Map;
@@ -18,13 +18,6 @@ import java.util.Map;
  */
 public interface DbSession {
 
-    /**
-     * 获取原生对象
-     *
-     * @param <T>
-     *
-     * @return
-     */
     <T> T getNativeObj();
 
     <T> boolean insertOne(T data) throws DbException;
@@ -55,7 +48,7 @@ public interface DbSession {
 
     <T> PageData<T> findPage(T data, PageInfo pageInfo, List<SearchParam> searchParamList) throws DbException;
 
-    <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, QueryObject selector, List<SearchParam> searchParamList) throws DbException;
+    <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, FieldFilter fieldFilter, List<SearchParam> searchParamList) throws DbException;
 
     <T> PageData<T> find(T t, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException;
 
@@ -63,7 +56,7 @@ public interface DbSession {
 
     <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo);
 
-    <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList, QueryObject selector) throws DbException;
+    <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, FieldFilter fieldFilter, List<SearchParam> searchParamList) throws DbException;
 
     <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList) throws DbException;
 

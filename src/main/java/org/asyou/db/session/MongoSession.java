@@ -1,25 +1,37 @@
 package org.asyou.db.session;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.mongodb.client.model.Filters;
 import org.asyou.db.exception.DbErrorCode;
 import org.asyou.db.exception.DbException;
 import org.asyou.db.exception.MongoMsg;
+import org.asyou.db.tool.PageConvert;
 import org.asyou.db.tool.ToolPageInfo;
 import org.asyou.db.tool.ToolPrimaryKey;
 import org.asyou.db.tool.ToolTable;
 import org.asyou.db.type.BoolParams;
+import org.asyou.db.type.FieldFilter;
 import org.asyou.db.type.FromToDate;
 import org.asyou.db.type.PageData;
 import org.asyou.db.type.PageInfo;
 import org.asyou.db.type.SearchParam;
+import org.asyou.mongo.Aggregate;
 import org.asyou.mongo.Count;
+import org.asyou.mongo.Find;
+import org.asyou.mongo.Page;
 import org.asyou.mongo.dao.MongoAdapter;
 import org.asyou.mongo.exception.MongoAdapterException;
+import org.asyou.mongo.query.QueryAggregate;
 import org.asyou.mongo.query.QueryMatcher;
 import org.asyou.mongo.type.DateTimeFromTo;
-import org.asyou.sequoia.query.QueryObject;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pro.tools.data.decimal.Decimal;
 import pro.tools.data.text.ToolJson;
+import pro.tools.data.text.ToolStr;
 
 import java.util.List;
 import java.util.Map;
@@ -147,57 +159,68 @@ public class MongoSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, QueryObject selector, List<SearchParam> searchParamList) throws DbException {
+    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, FieldFilter fieldFilter, List<SearchParam> searchParamList) throws DbException {
+        try {
+            Find find = mongoAdapter.collection(ToolTable.getName(data)).find(data);
+            QueryMatcher queryMatcher = new QueryMatcher(data);
+            boolean haveMatcher = false;
 
-        // try {
-        //     Find find = mongoAdapter.collection(ToolTable.getName(data)).find(data);
-        //     QueryMatcher queryMatcher = new QueryMatcher(data);
-        //     boolean haveMatcher = false;
-        //
-        //     if (fromToDate != null) {
-        //         DateTimeFromTo dateTimeFromTo = new DateTimeFromTo(fromToDate.getFieldName());
-        //         dateTimeFromTo.setFrom(fromToDate.getFrom().getLocalDateTime());
-        //         dateTimeFromTo.setTo(fromToDate.getTo().getLocalDateTime());
-        //         queryMatcher.dateTimeFromTo(dateTimeFromTo);
-        //         haveMatcher = true;
-        //     }
-        //
-        //     if (sortMap != null && !sortMap.isEmpty()) {
-        //         //FIXME 待测试
-        //         String sortStr = ToolJson.mapToJson(sortMap);
-        //         if (ToolStr.notBlank(sortStr)) {
-        //             find.sort(new QueryMatcher(sortStr));
-        //             haveMatcher = true;
-        //         }
-        //     }
-        //
-        //     if (boolParams != null) {
-        //         if (boolParams.getContain()) {
-        //             queryMatcher.contain();
-        //         }
-        //         if (boolParams.getOr()) {
-        //             queryMatcher.or();
-        //         }
-        //         if (boolParams.getNot()) {
-        //             queryMatcher.not();
-        //         }
-        //     }
-        //
-        //     if (haveMatcher) {
-        //         find.match(queryMatcher);
-        //     }
-        //
-        //     if (selector != null) {
-        //         //TODO 加上字段筛选
-        //     }
-        //
-        //     Page<T> page = find.page(pageIndex, pageSize);
-        //     PageData<T> pageData = PageConvert.page2pageData4mongo(page);
-        //     return pageData;
-        // } catch (Exception e) {
-        //     throw new DbException(e, DbErrorCode.FIND_FAIL);
-        // }
-        return null;
+            if (fromToDate != null) {
+                DateTimeFromTo dateTimeFromTo = new DateTimeFromTo(fromToDate.getFieldName());
+                dateTimeFromTo.setFrom(fromToDate.getFrom().getLocalDateTime());
+                dateTimeFromTo.setTo(fromToDate.getTo().getLocalDateTime());
+                queryMatcher.dateTimeFromTo(dateTimeFromTo);
+                haveMatcher = true;
+            }
+
+            if (searchParamList != null && !searchParamList.isEmpty()) {
+                for (SearchParam searchParam : searchParamList) {
+                    Bson inBson = Filters.in(searchParam.getFieldName(), searchParam.getValues());
+                    queryMatcher.putAll(inBson);
+                }
+            }
+
+            if (sortMap != null && !sortMap.isEmpty()) {
+                //FIXME 待测试
+                String sortStr = ToolJson.mapToJson(sortMap);
+                if (ToolStr.notBlank(sortStr)) {
+                    find.sort(new QueryMatcher(sortStr));
+                    haveMatcher = true;
+                }
+            }
+
+            if (boolParams != null) {
+                if (boolParams.getContain()) {
+                    queryMatcher.contain();
+                }
+                if (boolParams.getOr()) {
+                    queryMatcher.or();
+                }
+                if (boolParams.getNot()) {
+                    queryMatcher.not();
+                }
+                haveMatcher = true;
+            }
+
+            if (haveMatcher) {
+                find.match(queryMatcher);
+            }
+
+            if (fieldFilter != null) {
+                if (fieldFilter.getAscFieldNames() != null) {
+                    find.asc(fieldFilter.getAscFieldNames());
+                }
+                if (fieldFilter.getDescFieldNames() != null) {
+                    find.desc(fieldFilter.getDescFieldNames());
+                }
+            }
+
+            Page<T> page = find.page(pageIndex, pageSize);
+            PageData<T> pageData = PageConvert.page2pageData4mongo(page);
+            return pageData;
+        } catch (Exception e) {
+            throw new DbException(e, DbErrorCode.FIND_FAIL);
+        }
     }
 
     @Override
@@ -255,129 +278,127 @@ public class MongoSession implements DbSession {
 
     @Override
     public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo, List<SearchParam> searchParamList) {
-        // Map<String, Number> sumMap = new HashMap<>();
-        // fieldNameList.forEach(fieldName -> {
-        //     Number fieldNameSum = mongoAdapter.total(data, fieldName).sum(fieldName);
-        //     sumMap.put(fieldName, fieldNameSum);
-        // });
-        // return sumMap;
-        return null;
+        Map<String, Number> sumMap = Maps.newHashMapWithExpectedSize(fieldNameMap.size());
+        fieldNameMap.forEach((key, val) -> {
+            Number vale = 0D;
+            try {
+                Aggregate aggregate = mongoAdapter.collection(ToolTable.getName(data)).aggregate();
+
+                FromToDate fromToDate = pageInfo.getFromToDate();
+                BoolParams boolParams = pageInfo.getBoolParams();
+
+                QueryMatcher queryMatcher = new QueryMatcher(data);
+
+                if (searchParamList != null && !searchParamList.isEmpty()) {
+                    for (SearchParam searchParam : searchParamList) {
+                        Bson inBson = Filters.in(searchParam.getFieldName(), searchParam.getValues());
+                        queryMatcher.putAll(inBson);
+                    }
+                }
+
+                if (fromToDate != null) {
+                    DateTimeFromTo dateTimeFromTo = new DateTimeFromTo(fromToDate.getFieldName());
+                    dateTimeFromTo.setFrom(fromToDate.getFrom().getLocalDateTime());
+                    dateTimeFromTo.setTo(fromToDate.getTo().getLocalDateTime());
+                    queryMatcher.dateTimeFromTo(dateTimeFromTo);
+                }
+
+                if (boolParams != null) {
+                    if (boolParams.getContain()) {
+                        queryMatcher.contain();
+                    }
+                    if (boolParams.getOr()) {
+                        queryMatcher.or();
+                    }
+                    if (boolParams.getNot()) {
+                        queryMatcher.not();
+                    }
+                }
+
+                QueryAggregate queryAggregate = new QueryAggregate(queryMatcher.toBson());
+                aggregate.match(queryAggregate);
+
+                Number number = aggregate.sum(val);
+                vale = Decimal.instance(number).moneyValue();
+            } catch (MongoAdapterException e) {
+                log.warn("total统计出错！", e);
+            }
+            sumMap.put(key, vale);
+        });
+        return sumMap;
     }
 
     @Override
     public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo) {
-        return null;
+        return this.sum(data, fieldNameMap, pageInfo, null);
     }
 
     @Override
-    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList, QueryObject selector) throws DbException {
-        // try {
-        //     pageInfo = ToolPageInfo.valid(pageInfo);
-        //     StringBuilder iQuery = new StringBuilder("{");
-        //     searchParamList.forEach(one -> {
-        //         Class<?> oneClazz;
-        //         try {
-        //             oneClazz = Class.forName(one.getClazzName());
-        //         } catch (ClassNotFoundException e) {
-        //             return;
-        //         }
-        //         String listAttrStr = list2bson(one.getValues(), oneClazz);
-        //         String oneIQuery = "'" + one.getFieldName() + "':{'$in':" + listAttrStr + "}";
-        //         iQuery.append(oneIQuery).append(",");
-        //     });
-        //     iQuery.deleteCharAt(iQuery.length() - 1);
-        //     iQuery.append("}");
-        //     MongoCollection<Document> collection = new MongoHost(mongoAdapter, ConfigManager.getMongoConfig(mongoAdapter.getId())).getDatabase()
-        //             .getCollection(
-        //                     ToolTable.getName(tClass)
-        //             );
-        //
-        //     IQuery query = new QueryFactory().createQuery(iQuery.toString());
-        //
-        //     //TODO selector
-        //
-        //     long totalCount = collection.count(query.toDocument());
-        //
-        //     FindIterable<Document> findIterable = collection.find(query.toDocument());
-        //
-        //     Map<String, Integer> sortMap = pageInfo.getSortMap();
-        //     if (!sortMap.isEmpty()) {
-        //         IQuery sortQuery = new QueryFactory().createQuery(sortMap);
-        //         findIterable.sort(sortQuery.toDocument());
-        //     }
-        //
-        //     //分页
-        //     findIterable.skip(pageInfo.getPageIndex() * pageInfo.getPageSize())
-        //             .limit(pageInfo.getPageSize());
-        //
-        //     List<T> list = Lists.newLinkedList();
-        //
-        //     for (Document document : findIterable) {
-        //         list.add(ToolJson.mapToModel(document, tClass));
-        //     }
-        //
-        //     return new PageData<>(pageInfo.getPageIndex(), pageInfo.getPageSize(), totalCount, list);
-        // } catch (Exception e) {
-        //     throw new DbException(e, DbErrorCode.FIND_FAIL);
-        // }
-        return null;
+    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, FieldFilter fieldFilter, List<SearchParam> searchParamList) throws DbException {
+        try {
+            pageInfo = ToolPageInfo.valid(pageInfo);
+
+            List<Bson> searchs = Lists.newArrayList();
+            for (SearchParam searchParam : searchParamList) {
+                searchs.add(Filters.in(searchParam.getFieldName(), searchParam.getValues()));
+            }
+
+            FromToDate fromToDate = pageInfo.getFromToDate();
+            if (fromToDate != null) {
+                if (fromToDate.isShort()) {
+                    searchs.add(Filters.gte(fromToDate.getFieldName(), fromToDate.getFrom().getLocalDateTime().toLocalDate()));
+                    searchs.add(Filters.lte(fromToDate.getFieldName(), fromToDate.getTo().getLocalDateTime().toLocalDate()));
+                } else {
+                    searchs.add(Filters.gte(fromToDate.getFieldName(), fromToDate.getFrom().getLocalDateTime()));
+                    searchs.add(Filters.lte(fromToDate.getFieldName(), fromToDate.getTo().getLocalDateTime()));
+                }
+            }
+
+            Bson query = Filters.and(searchs);
+
+            Find find = mongoAdapter.collection(ToolTable.getName(tClass)).find(query).as(tClass);
+            Map<String, Integer> sortMap = pageInfo.getSortMap();
+            if (!sortMap.isEmpty()) {
+                Document document = new Document();
+                document.putAll(sortMap);
+                QueryMatcher sortQueryMatcher = new QueryMatcher(document);
+                find.sort(sortQueryMatcher);
+            }
+
+            if (fieldFilter != null) {
+                if (fieldFilter.getAscFieldNames() != null) {
+                    find.asc(fieldFilter.getAscFieldNames());
+                }
+                if (fieldFilter.getDescFieldNames() != null) {
+                    find.desc(fieldFilter.getDescFieldNames());
+                }
+            }
+
+            Page<T> page = find.page(pageInfo.getPageIndex(), pageInfo.getPageSize());
+            PageData<T> pageData = PageConvert.page2pageData4mongo(page);
+            return pageData;
+        } catch (Exception e) {
+            throw new DbException(e, DbErrorCode.FIND_FAIL);
+        }
     }
 
     @Override
     public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList) throws DbException {
-        return findAny(pageInfo, tClass, searchParamList, null);
+        return findAny(pageInfo, tClass,null, searchParamList);
     }
 
     @Override
     public <T> long countAny(Class<T> tClass, List<SearchParam> searchParamList) throws DbException {
-        // try {
-        //     StringBuilder iQuery = new StringBuilder("{");
-        //     searchParamList.forEach(one -> {
-        //         Class<?> oneClazz;
-        //         try {
-        //             oneClazz = Class.forName(one.getClazzName());
-        //         } catch (ClassNotFoundException e) {
-        //             return;
-        //         }
-        //         String listAttrStr = list2bson(one.getValues(), oneClazz);
-        //         String oneIQuery = "'" + one.getFieldName() + "':{'$in':" + listAttrStr + "}";
-        //         iQuery.append(oneIQuery).append(",");
-        //     });
-        //     iQuery.deleteCharAt(iQuery.length() - 1);
-        //     iQuery.append("}");
-        //
-        //     MongoCollection<Document> collection = new MongoHost(mongoAdapter, MongoManager.getMongoConfig(mongoAdapter.getId())).getDatabase()
-        //             .getCollection(
-        //                     ToolTable.getName(tClass)
-        //             );
-        //
-        //     IQuery query = new QueryFactory().createQuery(iQuery.toString());
-        //
-        //     return collection.count(query.toDocument());
-        // } catch (Exception e) {
-        //     throw new DbException(e, DbErrorCode.FIND_FAIL);
-        // }
-        return 0L;
-    }
-
-    private static <T> String list2bson(final List objects, Class<T> clazz) {
-        return list2str("[", "]", ",", objects, clazz);
-    }
-
-    private static <T> String list2str(final String start, final String end, final String sep, final List objects, Class<T> clazz) {
-        StringBuilder stringBuilder = new StringBuilder(start);
-
-        objects.forEach(object -> {
-            if (object instanceof String) {
-                stringBuilder.append("\"").append(object.toString()).append("\"").append(sep);
-            } else if (object.getClass().equals(clazz)) {
-                stringBuilder.append(clazz.cast(object)).append(sep);
-            } else {
-                T jsonToAny = ToolJson.jsonToAny(ToolJson.anyToJson(object), clazz);
-                stringBuilder.append(clazz.cast(jsonToAny)).append(sep);
+        try {
+            Bson[] searchs = new Bson[searchParamList.size()];
+            for (int i = 0; i < searchParamList.size(); i++) {
+                SearchParam searchParam = searchParamList.get(i);
+                searchs[i] = Filters.in(searchParam.getFieldName(),searchParam.getValues());
             }
-        });
-        int i = stringBuilder.lastIndexOf(sep);
-        return stringBuilder.substring(0, i) + end;
+            Bson query = Filters.and(searchs);
+            return mongoAdapter.collection(ToolTable.getName(tClass)).count().count(query);
+        } catch (Exception e) {
+            throw new DbException(e, DbErrorCode.FIND_FAIL);
+        }
     }
 }
