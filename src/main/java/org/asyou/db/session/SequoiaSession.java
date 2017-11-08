@@ -246,6 +246,17 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
+    public <T> PageData<T> find(BSONObject bsonObject, Class<T> tClass, int pageIndex, int pageSize) throws DbException {
+        Page<T> page;
+        try {
+            page = sequoiaAdapter.collection(ToolTable.getName(tClass)).find(bsonObject).page(pageIndex, pageSize);
+        } catch (SequoiaAdapterException e) {
+            throw new DbException(e, DbErrorCode.FIND_FAIL);
+        }
+        return PageConvert.page2pageData4sequoia(page);
+    }
+
+    @Override
     public <T> long count(T data) throws DbException {
         return count(data, null);
     }
@@ -405,7 +416,7 @@ public class SequoiaSession implements DbSession {
 
     @Override
     public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList) throws DbException {
-        return findAny(pageInfo, tClass,null, searchParamList);
+        return findAny(pageInfo, tClass, null, searchParamList);
     }
 
     @Override

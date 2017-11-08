@@ -26,6 +26,7 @@ import org.asyou.mongo.query.QueryAggregate;
 import org.asyou.mongo.query.QueryMatcher;
 import org.asyou.mongo.query.QueryObject;
 import org.asyou.mongo.type.DateTimeFromTo;
+import org.bson.BSONObject;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ import pro.tools.data.text.ToolStr;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author SeanDragon Create By 2017-06-13 14:37
@@ -226,6 +228,21 @@ public class MongoSession implements DbSession {
     }
 
     @Override
+    public <T> PageData<T> find(BSONObject bsonObject, Class<T> tClass, int pageIndex, int pageSize) throws DbException {
+        Set<String> stringSet = bsonObject.keySet();
+        Document document = new Document();
+        stringSet.forEach(one -> document.put(one, bsonObject.get(one)));
+        Page<T> page;
+        try {
+            page = mongoAdapter.collection(ToolTable.getName(tClass)).find(document).page(pageIndex, pageSize);
+        } catch (MongoAdapterException e) {
+            throw new DbException(e, DbErrorCode.FIND_FAIL);
+        }
+
+        return PageConvert.page2pageData4mongo(page);
+    }
+
+    @Override
     public <T> long count(T data) throws DbException {
         return count(data, null);
     }
@@ -377,7 +394,7 @@ public class MongoSession implements DbSession {
 
     @Override
     public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<SearchParam> searchParamList) throws DbException {
-        return findAny(pageInfo, tClass,null, searchParamList);
+        return findAny(pageInfo, tClass, null, searchParamList);
     }
 
     @Override
@@ -386,7 +403,7 @@ public class MongoSession implements DbSession {
             Bson[] searchs = new Bson[searchParamList.size()];
             for (int i = 0; i < searchParamList.size(); i++) {
                 SearchParam searchParam = searchParamList.get(i);
-                searchs[i] = Filters.in(searchParam.getFieldName(),searchParam.getValues());
+                searchs[i] = Filters.in(searchParam.getFieldName(), searchParam.getValues());
             }
             Bson query = Filters.and(searchs);
             return mongoAdapter.collection(ToolTable.getName(tClass)).count().count(query);
