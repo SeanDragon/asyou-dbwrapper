@@ -184,7 +184,6 @@ public class MongoSession implements DbSession {
             }
 
             if (sortMap != null && !sortMap.isEmpty()) {
-                //FIXME 待测试
                 String sortStr = ToolJson.mapToJson(sortMap);
                 if (ToolStr.notBlank(sortStr)) {
                     find.sort(new QueryMatcher(sortStr));
@@ -228,13 +227,27 @@ public class MongoSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> find(BSONObject bsonObject, Class<T> tClass, int pageIndex, int pageSize) throws DbException {
+    public <T> PageData<T> find(BSONObject bsonObject, Class<T> tClass, Map<String, Integer> sortMap, int pageIndex, int pageSize, List<String> includeFieldList) throws DbException {
         Set<String> stringSet = bsonObject.keySet();
         Document document = new Document();
         stringSet.forEach(one -> document.put(one, bsonObject.get(one)));
         Page<T> page;
         try {
-            page = mongoAdapter.collection(ToolTable.getName(tClass)).find(document).page(pageIndex, pageSize);
+            Find find = mongoAdapter.collection(ToolTable.getName(tClass)).find(document);
+
+            if (sortMap != null && !sortMap.isEmpty()) {
+                String sortStr = ToolJson.mapToJson(sortMap);
+                if (ToolStr.notBlank(sortStr)) {
+                    find.sort(new QueryMatcher(sortStr));
+                }
+            }
+
+            if (includeFieldList != null) {
+                Bson inBson = Projections.include(includeFieldList);
+                find.projection(QueryObject.create(inBson));
+            }
+
+            page = find.page(pageIndex, pageSize);
         } catch (MongoAdapterException e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
@@ -371,12 +384,13 @@ public class MongoSession implements DbSession {
             Bson query = Filters.and(searchs);
 
             Find find = mongoAdapter.collection(ToolTable.getName(tClass)).find(query).as(tClass);
+
             Map<String, Integer> sortMap = pageInfo.getSortMap();
             if (!sortMap.isEmpty()) {
-                Document document = new Document();
-                document.putAll(sortMap);
-                QueryMatcher sortQueryMatcher = new QueryMatcher(document);
-                find.sort(sortQueryMatcher);
+                String sortStr = ToolJson.mapToJson(sortMap);
+                if (ToolStr.notBlank(sortStr)) {
+                    find.sort(new QueryMatcher(sortStr));
+                }
             }
 
             if (includeFieldList != null) {

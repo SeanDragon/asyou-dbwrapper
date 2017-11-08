@@ -52,7 +52,7 @@ public interface DbSession {
 
     <T> PageData<T> find(T t, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize) throws DbException;
 
-    <T> PageData<T> find(BSONObject bsonObject, Class<T> tClass, int pageIndex, int pageSize) throws DbException;
+    <T> PageData<T> find(BSONObject bsonObject, Class<T> tClass, Map<String, Integer> sortMap, int pageIndex, int pageSize, List<String> includeFieldList) throws DbException;
 
     <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo, List<SearchParam> searchParamList);
 

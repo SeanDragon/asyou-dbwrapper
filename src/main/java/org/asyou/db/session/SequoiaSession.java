@@ -28,7 +28,6 @@ import org.asyou.sequoia.query.QueryObject;
 import org.asyou.sequoia.type.DateFromTo;
 import org.asyou.sequoia.type.DateTimeFromTo;
 import org.bson.BSONObject;
-import org.bson.BasicBSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pro.tools.data.decimal.Decimal;
@@ -202,11 +201,9 @@ public class SequoiaSession implements DbSession {
             }
 
             if (sortMap != null && !sortMap.isEmpty()) {
-                //FIXME 待测试
                 String sortStr = ToolJson.mapToJson(sortMap);
                 if (ToolStr.notBlank(sortStr)) {
                     find.sort(new QueryMatcher(sortStr));
-                    haveMatcher = true;
                 }
             }
 
@@ -246,10 +243,24 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> find(BSONObject bsonObject, Class<T> tClass, int pageIndex, int pageSize) throws DbException {
+    public <T> PageData<T> find(BSONObject bsonObject, Class<T> tClass, Map<String, Integer> sortMap, int pageIndex, int pageSize, List<String> includeFieldList) throws DbException {
         Page<T> page;
         try {
-            page = sequoiaAdapter.collection(ToolTable.getName(tClass)).find(bsonObject).page(pageIndex, pageSize);
+            Find find = sequoiaAdapter.collection(ToolTable.getName(tClass)).find(bsonObject);
+
+            if (sortMap != null && !sortMap.isEmpty()) {
+                String sortStr = ToolJson.mapToJson(sortMap);
+                if (ToolStr.notBlank(sortStr)) {
+                    find.sort(new QueryMatcher(sortStr));
+                }
+            }
+
+            if (includeFieldList != null) {
+                BSONObject includeBSONObject = Commons.combine(1, includeFieldList);
+                find.selector(QueryObject.create(includeBSONObject));
+            }
+
+            page = find.page(pageIndex, pageSize);
         } catch (SequoiaAdapterException e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
@@ -396,9 +407,10 @@ public class SequoiaSession implements DbSession {
             Find find = sequoiaAdapter.collection(ToolTable.getName(tClass)).find(query).as(tClass);
             Map<String, Integer> sortMap = pageInfo.getSortMap();
             if (!sortMap.isEmpty()) {
-                BasicBSONObject sortBSONObject = new BasicBSONObject(sortMap);
-                QueryMatcher sortQueryMatcher = new QueryMatcher(Matchers.and(sortBSONObject));
-                find.sort(sortQueryMatcher);
+                String sortStr = ToolJson.mapToJson(sortMap);
+                if (ToolStr.notBlank(sortStr)) {
+                    find.sort(new QueryMatcher(sortStr));
+                }
             }
 
             if (includeFieldList != null) {
