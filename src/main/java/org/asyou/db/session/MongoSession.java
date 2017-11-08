@@ -59,9 +59,9 @@ public class MongoSession implements DbSession {
     @Override
     public <T> boolean insertOne(T data) throws DbException {
         try {
-            boolean insertResult = mongoAdapter.collection(ToolTable.getName(data)).insert().insertOne(data) == 0;
+            int insertResult = mongoAdapter.collection(ToolTable.getName(data)).insert().insertOne(data);
             log.debug(MongoMsg.insertOne(insertResult).result());
-            return insertResult;
+            return insertResult == 1;
         } catch (Exception e) {
             log.warn(MongoMsg.insertOne(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
@@ -71,9 +71,9 @@ public class MongoSession implements DbSession {
     @Override
     public <T> boolean insertMany(List<T> dataList) throws DbException {
         try {
-            boolean insertResult = mongoAdapter.collection(ToolTable.getName(dataList.get(0))).insert().insertMany(dataList) == 0;
+            int insertResult = mongoAdapter.collection(ToolTable.getName(dataList.get(0))).insert().insertMany(dataList);
             log.debug(MongoMsg.insertMany(insertResult).result());
-            return insertResult;
+            return insertResult > 0;
         } catch (Exception e) {
             log.warn(MongoMsg.insertMany(dataList).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
@@ -83,9 +83,9 @@ public class MongoSession implements DbSession {
     @Override
     public <T> boolean deleteOne(T data) throws DbException {
         try {
-            boolean deleteResult = mongoAdapter.collection(ToolTable.getName(data)).delete().deleteOne(data) > 0;
+            long deleteResult = mongoAdapter.collection(ToolTable.getName(data)).delete().deleteOne(data);
             log.debug(MongoMsg.deleteOne(deleteResult).result());
-            return deleteResult;
+            return deleteResult > 0;
         } catch (Exception e) {
             log.warn(MongoMsg.deleteOne(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
@@ -95,9 +95,9 @@ public class MongoSession implements DbSession {
     @Override
     public <T> boolean deleteMany(T data) throws DbException {
         try {
-            boolean deleteResult = mongoAdapter.collection(ToolTable.getName(data)).delete().deleteMany(data) > 0;
+            long deleteResult = mongoAdapter.collection(ToolTable.getName(data)).delete().deleteMany(data);
             log.debug(MongoMsg.deleteOne(deleteResult).result());
-            return deleteResult;
+            return deleteResult > 0;
         } catch (Exception e) {
             log.warn(MongoMsg.deleteMany(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
@@ -108,9 +108,9 @@ public class MongoSession implements DbSession {
     public <T> boolean updateOne(T data) throws DbException {
         try {
             T queue = ToolPrimaryKey.getNewPrimaryKeyModel(data);
-            boolean updateResult = mongoAdapter.collection(ToolTable.getName(data)).update().updateOne(queue, data) > 0;
+            long updateResult = mongoAdapter.collection(ToolTable.getName(data)).update().updateOne(queue, data);
             log.debug(MongoMsg.updateOne(updateResult).result());
-            return updateResult;
+            return updateResult > 0;
         } catch (Exception e) {
             log.warn(MongoMsg.updateOne(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
@@ -120,9 +120,9 @@ public class MongoSession implements DbSession {
     @Override
     public <T> boolean updateMany(T queue, T data) throws DbException {
         try {
-            boolean updateResult = mongoAdapter.collection(ToolTable.getName(data)).update().updateMany(queue, data) > 0;
+            long updateResult = mongoAdapter.collection(ToolTable.getName(data)).update().updateMany(queue, data);
             log.debug(MongoMsg.updateMany(updateResult).result());
-            return updateResult;
+            return updateResult > 0;
         } catch (Exception e) {
             log.warn(MongoMsg.updateMany(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
