@@ -20,8 +20,8 @@ import org.asyou.sequoia.Find;
 import org.asyou.sequoia.Page;
 import org.asyou.sequoia.dao.SequoiaAdapter;
 import org.asyou.sequoia.exception.SequoiaAdapterException;
+import org.asyou.sequoia.model.Commons;
 import org.asyou.sequoia.model.Matchers;
-import org.asyou.sequoia.model.Selectors;
 import org.asyou.sequoia.query.QueryAggregate;
 import org.asyou.sequoia.query.QueryMatcher;
 import org.asyou.sequoia.query.QueryObject;
@@ -228,7 +228,7 @@ public class SequoiaSession implements DbSession {
             }
 
             if (includeFieldList != null) {
-                BSONObject includeBSONObject = Selectors.include(1, includeFieldList.toArray(new String[]{}));
+                BSONObject includeBSONObject = Commons.combine(1, includeFieldList);
                 find.selector(QueryObject.create(includeBSONObject));
             }
 
@@ -391,7 +391,7 @@ public class SequoiaSession implements DbSession {
             }
 
             if (includeFieldList != null) {
-                BSONObject includeBSONObject = Selectors.include(1, includeFieldList.toArray(new String[]{}));
+                BSONObject includeBSONObject = Commons.combine(1, includeFieldList);
                 find.selector(QueryObject.create(includeBSONObject));
             }
 
