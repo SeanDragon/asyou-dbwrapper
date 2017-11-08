@@ -3,6 +3,7 @@ package org.asyou.db.session;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.asyou.db.exception.DbErrorCode;
 import org.asyou.db.exception.DbException;
 import org.asyou.db.exception.MongoMsg;
@@ -11,7 +12,6 @@ import org.asyou.db.tool.ToolPageInfo;
 import org.asyou.db.tool.ToolPrimaryKey;
 import org.asyou.db.tool.ToolTable;
 import org.asyou.db.type.BoolParams;
-import org.asyou.db.type.FieldFilter;
 import org.asyou.db.type.FromToDate;
 import org.asyou.db.type.PageData;
 import org.asyou.db.type.PageInfo;
@@ -24,6 +24,7 @@ import org.asyou.mongo.dao.MongoAdapter;
 import org.asyou.mongo.exception.MongoAdapterException;
 import org.asyou.mongo.query.QueryAggregate;
 import org.asyou.mongo.query.QueryMatcher;
+import org.asyou.mongo.query.QueryObject;
 import org.asyou.mongo.type.DateTimeFromTo;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -159,7 +160,7 @@ public class MongoSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, FieldFilter fieldFilter, List<SearchParam> searchParamList) throws DbException {
+    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, List<String> includeFieldList, List<SearchParam> searchParamList) throws DbException {
         try {
             Find find = mongoAdapter.collection(ToolTable.getName(data)).find(data);
             QueryMatcher queryMatcher = new QueryMatcher(data);
@@ -206,13 +207,9 @@ public class MongoSession implements DbSession {
                 find.match(queryMatcher);
             }
 
-            if (fieldFilter != null) {
-                if (fieldFilter.getAscFieldNames() != null) {
-                    find.asc(fieldFilter.getAscFieldNames());
-                }
-                if (fieldFilter.getDescFieldNames() != null) {
-                    find.desc(fieldFilter.getDescFieldNames());
-                }
+            if (includeFieldList != null) {
+                Bson inBson = Projections.include(includeFieldList);
+                find.projection(QueryObject.create(inBson));
             }
 
             Page<T> page = find.page(pageIndex, pageSize);
@@ -334,7 +331,7 @@ public class MongoSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, FieldFilter fieldFilter, List<SearchParam> searchParamList) throws DbException {
+    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<String> includeFieldList, List<SearchParam> searchParamList) throws DbException {
         try {
             pageInfo = ToolPageInfo.valid(pageInfo);
 
@@ -365,13 +362,9 @@ public class MongoSession implements DbSession {
                 find.sort(sortQueryMatcher);
             }
 
-            if (fieldFilter != null) {
-                if (fieldFilter.getAscFieldNames() != null) {
-                    find.asc(fieldFilter.getAscFieldNames());
-                }
-                if (fieldFilter.getDescFieldNames() != null) {
-                    find.desc(fieldFilter.getDescFieldNames());
-                }
+            if (includeFieldList != null) {
+                Bson inBson = Projections.include(includeFieldList);
+                find.projection(QueryObject.create(inBson));
             }
 
             Page<T> page = find.page(pageInfo.getPageIndex(), pageInfo.getPageSize());

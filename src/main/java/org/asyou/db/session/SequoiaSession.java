@@ -10,7 +10,6 @@ import org.asyou.db.tool.ToolPageInfo;
 import org.asyou.db.tool.ToolPrimaryKey;
 import org.asyou.db.tool.ToolTable;
 import org.asyou.db.type.BoolParams;
-import org.asyou.db.type.FieldFilter;
 import org.asyou.db.type.FromToDate;
 import org.asyou.db.type.PageData;
 import org.asyou.db.type.PageInfo;
@@ -22,8 +21,10 @@ import org.asyou.sequoia.Page;
 import org.asyou.sequoia.dao.SequoiaAdapter;
 import org.asyou.sequoia.exception.SequoiaAdapterException;
 import org.asyou.sequoia.model.Matchers;
+import org.asyou.sequoia.model.Selectors;
 import org.asyou.sequoia.query.QueryAggregate;
 import org.asyou.sequoia.query.QueryMatcher;
+import org.asyou.sequoia.query.QueryObject;
 import org.asyou.sequoia.type.DateFromTo;
 import org.asyou.sequoia.type.DateTimeFromTo;
 import org.bson.BSONObject;
@@ -173,7 +174,7 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, FieldFilter fieldFilter, List<SearchParam> searchParamList) throws DbException {
+    public <T> PageData<T> find(T data, FromToDate fromToDate, BoolParams boolParams, Map<String, Integer> sortMap, int pageIndex, int pageSize, List<String> includeFieldList, List<SearchParam> searchParamList) throws DbException {
         try {
             Find find = sequoiaAdapter.collection(ToolTable.getName(data)).find(data);
             QueryMatcher queryMatcher = new QueryMatcher(data);
@@ -226,13 +227,9 @@ public class SequoiaSession implements DbSession {
                 find.matcher(queryMatcher);
             }
 
-            if (fieldFilter != null) {
-                if (fieldFilter.getAscFieldNames() != null) {
-                    find.asc(fieldFilter.getAscFieldNames());
-                }
-                if (fieldFilter.getDescFieldNames() != null) {
-                    find.desc(fieldFilter.getDescFieldNames());
-                }
+            if (includeFieldList != null) {
+                BSONObject includeBSONObject = Selectors.include(1, includeFieldList.toArray(new String[]{}));
+                find.selector(QueryObject.create(includeBSONObject));
             }
 
             Page<T> page = find.page(pageIndex, pageSize);
@@ -363,7 +360,7 @@ public class SequoiaSession implements DbSession {
     }
 
     @Override
-    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, FieldFilter fieldFilter, List<SearchParam> searchParamList) throws DbException {
+    public <T> PageData<T> findAny(PageInfo pageInfo, Class<T> tClass, List<String> includeFieldList, List<SearchParam> searchParamList) throws DbException {
         try {
             pageInfo = ToolPageInfo.valid(pageInfo);
 
@@ -393,13 +390,9 @@ public class SequoiaSession implements DbSession {
                 find.sort(sortQueryMatcher);
             }
 
-            if (fieldFilter != null) {
-                if (fieldFilter.getAscFieldNames() != null) {
-                    find.asc(fieldFilter.getAscFieldNames());
-                }
-                if (fieldFilter.getDescFieldNames() != null) {
-                    find.desc(fieldFilter.getDescFieldNames());
-                }
+            if (includeFieldList != null) {
+                BSONObject includeBSONObject = Selectors.include(1, includeFieldList.toArray(new String[]{}));
+                find.selector(QueryObject.create(includeBSONObject));
             }
 
             Page<T> page = find.page(pageInfo.getPageIndex(), pageInfo.getPageSize());
