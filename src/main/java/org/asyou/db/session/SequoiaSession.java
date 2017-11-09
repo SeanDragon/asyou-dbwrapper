@@ -246,7 +246,7 @@ public class SequoiaSession implements DbSession {
     public <T> PageData<T> find(BSONObject bsonObject, Class<T> tClass, Map<String, Integer> sortMap, int pageIndex, int pageSize, List<String> includeFieldList) throws DbException {
         Page<T> page;
         try {
-            Find find = sequoiaAdapter.collection(ToolTable.getName(tClass)).find(bsonObject);
+            Find find = sequoiaAdapter.collection(ToolTable.getName(tClass)).find(bsonObject).as(tClass);
 
             if (sortMap != null && !sortMap.isEmpty()) {
                 String sortStr = ToolJson.mapToJson(sortMap);
