@@ -34,7 +34,7 @@ public class PageData<T> implements Serializable {
         return pageIndex;
     }
 
-    public PageData setPageIndex(int pageIndex) {
+    public PageData<T> setPageIndex(int pageIndex) {
         this.pageIndex = pageIndex;
         return this;
     }
@@ -43,7 +43,7 @@ public class PageData<T> implements Serializable {
         return pageSize;
     }
 
-    public PageData setPageSize(int pageSize) {
+    public PageData<T> setPageSize(int pageSize) {
         this.pageSize = pageSize;
         return this;
     }
@@ -52,7 +52,7 @@ public class PageData<T> implements Serializable {
         return perPageCount;
     }
 
-    public PageData setPerPageCount(int perPageCount) {
+    public PageData<T> setPerPageCount(int perPageCount) {
         this.perPageCount = perPageCount;
         return this;
     }
@@ -61,7 +61,7 @@ public class PageData<T> implements Serializable {
         return totalCount;
     }
 
-    public PageData setTotalCount(long totalCount) {
+    public PageData<T> setTotalCount(long totalCount) {
         this.totalCount = totalCount;
         return this;
     }
@@ -70,7 +70,7 @@ public class PageData<T> implements Serializable {
         return pageInfo;
     }
 
-    public PageData setPageInfo(PageInfo pageInfo) {
+    public PageData<T> setPageInfo(PageInfo pageInfo) {
         this.pageInfo = pageInfo;
         return this;
     }
@@ -79,7 +79,7 @@ public class PageData<T> implements Serializable {
         return list;
     }
 
-    public PageData setList(List<T> list) {
+    public PageData<T> setList(List<T> list) {
         this.list = list;
         return this;
     }
@@ -113,31 +113,31 @@ public class PageData<T> implements Serializable {
         }
     }
 
-    public PageData firstPage() {
+    public PageData<T> firstPage() {
         this.pageIndex = 0;
         this.count();
         return this;
     }
 
-    public PageData lastPage() {
+    public PageData<T> lastPage() {
         this.pageIndex = this.pageSize - 1;
         this.count();
         return this;
     }
 
-    public PageData nextPage() {
+    public PageData<T> nextPage() {
         ++this.pageIndex;
         this.count();
         return this;
     }
 
-    public PageData prePage() {
+    public PageData<T> prePage() {
         --this.pageIndex;
         this.count();
         return this;
     }
 
-    public PageData gotoPage(int pageIndex) {
+    public PageData<T> gotoPage(int pageIndex) {
         this.pageIndex = pageIndex;
         this.count();
         return this;
@@ -147,7 +147,7 @@ public class PageData<T> implements Serializable {
         return totals;
     }
 
-    public PageData setTotals(Map totals) {
+    public PageData<T> setTotals(Map totals) {
         this.totals = totals;
         return this;
     }
