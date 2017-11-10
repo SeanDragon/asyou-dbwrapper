@@ -274,8 +274,8 @@ public class MongoSession implements DbSession {
 
             if (fromToDate != null) {
                 DateTimeFromTo dateTimeFromTo = new DateTimeFromTo(fromToDate.getFieldName());
-                dateTimeFromTo.setFrom(fromToDate.getFrom().getLocalDateTime().plusHours(8));
-                dateTimeFromTo.setTo(fromToDate.getTo().getLocalDateTime().plusHours(8));
+                dateTimeFromTo.setFrom(fromToDate.getFrom().getLocalDateTime());
+                dateTimeFromTo.setTo(fromToDate.getTo().getLocalDateTime());
                 queryMatcher.dateTimeFromTo(dateTimeFromTo);
                 haveMatcher = true;
             }
