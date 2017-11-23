@@ -366,8 +366,7 @@ public class SequoiaSession implements DbSession {
                 QueryAggregate queryAggregate = new QueryAggregate(queryMatcher.toBSONObject());
                 aggregate.matcher(queryAggregate);
 
-                Number number = aggregate.sum(val);
-                vale = Decimal.instance(number).moneyValue();
+                vale = Decimal.instance(aggregate.sum(val)).moneyValue();
             } catch (SequoiaAdapterException e) {
                 log.warn("total统计出错！", e);
             }
