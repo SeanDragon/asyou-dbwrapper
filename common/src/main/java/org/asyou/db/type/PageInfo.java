@@ -1,7 +1,6 @@
 package org.asyou.db.type;
 
 import com.google.common.base.MoreObjects;
-import org.asyou.db.tool.ToolPageInfo;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -14,9 +13,11 @@ import java.util.Map;
  */
 public class PageInfo implements Serializable {
 
+    private static final int DEFAULT_SIZE = 20;
+
     public PageInfo() {
         this.pageIndex = 0;
-        this.pageSize = ToolPageInfo.DEFAULT_SIZE;
+        this.pageSize = DEFAULT_SIZE;
         this.sortMap = new HashMap<>();
         this.boolParams = BoolParams.buildAnd();
     }
