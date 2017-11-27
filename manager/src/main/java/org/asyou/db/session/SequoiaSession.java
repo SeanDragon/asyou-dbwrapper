@@ -19,7 +19,6 @@ import org.asyou.sequoia.Count;
 import org.asyou.sequoia.Find;
 import org.asyou.sequoia.Page;
 import org.asyou.sequoia.dao.SequoiaAdapter;
-import org.asyou.sequoia.exception.SequoiaAdapterException;
 import org.asyou.sequoia.model.Commons;
 import org.asyou.sequoia.model.Matchers;
 import org.asyou.sequoia.query.QueryAggregate;
@@ -62,7 +61,7 @@ public class SequoiaSession implements DbSession {
             int insertResult = sequoiaAdapter.collection(ToolTable.getName(data)).insert().insertOneT(data);
             log.debug(SequoiaMsg.insertOne(insertResult).result());
             return insertResult == 1;
-        } catch (SequoiaAdapterException e) {
+        } catch (Exception e) {
             log.warn(SequoiaMsg.insertOne(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
         }
@@ -74,7 +73,7 @@ public class SequoiaSession implements DbSession {
             int insertResult = sequoiaAdapter.collection(ToolTable.getName(dataList.get(0))).insert().insertManyT(dataList);
             log.debug(SequoiaMsg.insertMany(insertResult).result());
             return insertResult == 1;
-        } catch (SequoiaAdapterException e) {
+        } catch (Exception e) {
             log.warn(SequoiaMsg.insertMany(dataList).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
         }
@@ -88,7 +87,7 @@ public class SequoiaSession implements DbSession {
             int deleteResult = sequoiaAdapter.collection(ToolTable.getName(data)).delete().deleteOneT(data);
             log.debug(SequoiaMsg.deleteOne(deleteResult).result());
             return deleteResult == 1;
-        } catch (SequoiaAdapterException e) {
+        } catch (Exception e) {
             log.warn(SequoiaMsg.deleteOne(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
         }
@@ -102,7 +101,7 @@ public class SequoiaSession implements DbSession {
             int deleteResult = sequoiaAdapter.collection(ToolTable.getName(data)).delete().deleteManyT(data);
             log.debug(SequoiaMsg.deleteMany(deleteResult).result());
             return deleteResult > 0;
-        } catch (SequoiaAdapterException e) {
+        } catch (Exception e) {
             log.warn(SequoiaMsg.deleteMany(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
         }
@@ -117,7 +116,7 @@ public class SequoiaSession implements DbSession {
             int updateResult = sequoiaAdapter.collection(ToolTable.getName(data)).update().updateOneT(queue, data);
             log.debug(SequoiaMsg.updateOne(updateResult).result());
             return updateResult == 1;
-        } catch (SequoiaAdapterException | IllegalAccessException | InstantiationException e) {
+        } catch (Exception e) {
             log.warn(SequoiaMsg.updateOne(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
         }
@@ -131,7 +130,7 @@ public class SequoiaSession implements DbSession {
             int updateResult = sequoiaAdapter.collection(ToolTable.getName(data)).update().updateManyT(queue, data);
             log.debug(SequoiaMsg.updateMany(updateResult).result());
             return updateResult > 0;
-        } catch (SequoiaAdapterException e) {
+        } catch (Exception e) {
             log.warn(SequoiaMsg.updateMany(data).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
         }
@@ -141,7 +140,7 @@ public class SequoiaSession implements DbSession {
     public <T> T findOne(T data) throws DbException {
         try {
             return sequoiaAdapter.collection(ToolTable.getName(data)).find(data).findOne();
-        } catch (SequoiaAdapterException e) {
+        } catch (Exception e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
     }
@@ -261,7 +260,7 @@ public class SequoiaSession implements DbSession {
             }
 
             page = find.page(pageIndex, pageSize);
-        } catch (SequoiaAdapterException e) {
+        } catch (Exception e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
         return PageConvert.page2pageData4sequoia(page);
@@ -367,7 +366,7 @@ public class SequoiaSession implements DbSession {
                 aggregate.matcher(queryAggregate);
 
                 vale = Decimal.instance(aggregate.sum(val)).moneyValue();
-            } catch (SequoiaAdapterException e) {
+            } catch (Exception e) {
                 log.warn("total统计出错！", e);
             }
             sumMap.put(key, vale);
