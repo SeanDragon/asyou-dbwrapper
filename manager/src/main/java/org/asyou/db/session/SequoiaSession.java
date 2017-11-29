@@ -72,7 +72,7 @@ public class SequoiaSession implements DbSession {
         try {
             int insertResult = sequoiaAdapter.collection(ToolTable.getName(dataList.get(0))).insert().insertManyT(dataList);
             log.debug(SequoiaMsg.insertMany(insertResult).result());
-            return insertResult == 1;
+            return insertResult == dataList.size();
         } catch (Exception e) {
             log.warn(SequoiaMsg.insertMany(dataList).error());
             throw new DbException(e, DbErrorCode.EXEC_FAIL);
