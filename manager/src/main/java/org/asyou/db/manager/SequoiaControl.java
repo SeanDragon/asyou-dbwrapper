@@ -21,15 +21,15 @@ public class SequoiaControl extends DbControl {
     private static SequoiaControl single;
     private static Map<String, DbSessionFactory> dbSessionFactoryMap;
 
+    static {
+        dbSessionFactoryMap = new ConcurrentHashMap<>();
+    }
+
     public static SequoiaControl getSingle() {
         if (single == null) {
             single = new SequoiaControl();
         }
         return single;
-    }
-
-    private SequoiaControl() {
-        dbSessionFactoryMap = new ConcurrentHashMap<>();
     }
 
     @Override

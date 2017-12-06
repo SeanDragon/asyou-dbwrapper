@@ -21,15 +21,15 @@ public class MongoControl extends DbControl {
     private static MongoControl single;
     private static Map<String, DbSessionFactory> dbSessionFactoryMap;
 
+    static {
+        dbSessionFactoryMap = new ConcurrentHashMap<>();
+    }
+
     public static MongoControl getSingle() {
         if (single == null) {
             single = new MongoControl();
         }
         return single;
-    }
-
-    private MongoControl() {
-        dbSessionFactoryMap = new ConcurrentHashMap<>();
     }
 
     @Override
