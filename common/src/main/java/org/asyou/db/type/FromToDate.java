@@ -7,7 +7,7 @@ import pro.tools.time.DatePlus;
  * <p>
  * Create By 2017-10-19 14:48
  */
-public class FromToDate {
+public class FromToDate implements java.io.Serializable{
 
     private String fieldName;
     private DatePlus from;

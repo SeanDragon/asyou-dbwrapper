@@ -1,11 +1,9 @@
 package org.asyou.db.type;
 
-import java.io.Serializable;
-
 /**
  * @author SeanDragon
  */
-public class BoolParams implements Serializable {
+public class BoolParams implements java.io.Serializable {
     private boolean contain;
     private boolean or;
     private boolean not;

@@ -1,6 +1,5 @@
 package org.asyou.db.type;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +9,7 @@ import java.util.Map;
  *
  * @author SeanDragon Create By 2017-06-13 14:23
  */
-public class PageData<T> implements Serializable {
+public class PageData<T> implements java.io.Serializable {
     private static final int DEFAULT_SIZE = 20;
 
     private int pageIndex;

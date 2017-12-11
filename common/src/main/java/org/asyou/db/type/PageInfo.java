@@ -2,7 +2,6 @@ package org.asyou.db.type;
 
 import com.google.common.base.MoreObjects;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +10,7 @@ import java.util.Map;
  *
  * @author SeanDragon
  */
-public class PageInfo implements Serializable {
+public class PageInfo implements java.io.Serializable {
 
     private static final int DEFAULT_SIZE = 20;
 
