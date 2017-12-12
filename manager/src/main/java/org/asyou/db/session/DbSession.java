@@ -54,6 +54,8 @@ public interface DbSession {
 
     <T> PageData<T> find(BSONObject bsonObject, Class<T> tClass, Map<String, Integer> sortMap, int pageIndex, int pageSize, List<String> includeFieldList) throws DbException;
 
+    <T> long count(BSONObject bsonObject, Class<T> tClass) throws DbException;
+
     <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo, List<SearchParam> searchParamList);
 
     <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo);

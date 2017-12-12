@@ -304,6 +304,19 @@ public class MongoSession implements DbSession {
     }
 
     @Override
+    public <T> long count(BSONObject bsonObject, Class<T> tClass) throws DbException {
+        Set<String> stringSet = bsonObject.keySet();
+        Document document = new Document();
+        stringSet.forEach(one -> document.put(one, bsonObject.get(one)));
+        try {
+            Count count = mongoAdapter.collection(ToolTable.getName(tClass)).count().as(tClass);
+            return count.count(document);
+        } catch (MongoAdapterException e) {
+            throw new DbException(e, DbErrorCode.FIND_FAIL);
+        }
+    }
+
+    @Override
     public <T> Map<String, Number> sum(T data, Map<String, String> fieldNameMap, PageInfo pageInfo, List<SearchParam> searchParamList) {
         Map<String, Number> sumMap = Maps.newHashMapWithExpectedSize(fieldNameMap.size());
         fieldNameMap.forEach((key, val) -> {

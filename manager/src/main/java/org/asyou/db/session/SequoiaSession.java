@@ -41,6 +41,7 @@ import java.util.Map;
  * <p>
  * Create By 2017-10-19 17:23
  */
+@SuppressWarnings("unchecked")
 public class SequoiaSession implements DbSession {
 
     private static final Logger log = LoggerFactory.getLogger(SequoiaSession.class);
@@ -311,6 +312,16 @@ public class SequoiaSession implements DbSession {
             count.matcher(queryMatcher);
 
             return count.count();
+        } catch (Exception e) {
+            throw new DbException(e, DbErrorCode.FIND_FAIL);
+        }
+    }
+
+    @Override
+    public <T> long count(BSONObject bsonObject, Class<T> tClass) throws DbException {
+        try {
+            Count count = sequoiaAdapter.collection(ToolTable.getName(tClass)).count().as(tClass);
+            return count.count(bsonObject);
         } catch (Exception e) {
             throw new DbException(e, DbErrorCode.FIND_FAIL);
         }
